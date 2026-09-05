@@ -14,14 +14,13 @@ namespace QuickSwap
         /// chord but wrong for a gameplay bind: holding W to run would silently kill a
         /// bare Q shortcut. Only the keys the shortcut actually names are checked here.
         ///
-        /// The cost of that looseness is that a bare Q also fires on shift+Q, so anything
+        /// The cost of that looseness is that a bare Q also fires on alt+Q, so anything
         /// dispatching two shortcuts that share a main key has to try the one with more
         /// modifiers first — see <see cref="ModifierCount"/>.
         /// </remarks>
         internal static bool Triggered(this KeyboardShortcut shortcut)
         {
-            KeyCode mainKey = shortcut.MainKey;
-            if (mainKey == KeyCode.None || !Input.GetKeyDown(mainKey))
+            if (!shortcut.IsBound() || !Input.GetKeyDown(shortcut.MainKey))
             {
                 return false;
             }
@@ -37,7 +36,13 @@ namespace QuickSwap
             return true;
         }
 
-        /// <summary>How specific the shortcut is: shift+Q beats a bare Q.</summary>
+        /// <summary>Whether the shortcut names a key at all.</summary>
+        internal static bool IsBound(this KeyboardShortcut shortcut)
+        {
+            return shortcut.MainKey != KeyCode.None;
+        }
+
+        /// <summary>How specific the shortcut is: alt+Q beats a bare Q.</summary>
         internal static int ModifierCount(this KeyboardShortcut shortcut)
         {
             int count = 0;

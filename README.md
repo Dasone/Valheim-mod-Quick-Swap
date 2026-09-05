@@ -1,167 +1,77 @@
 # Quick Swap
 
-A Valheim BepInEx mod for bouncing between hotbar slots without reaching for the number row.
+Swap between two hotbar slots with one key, instead of reaching for the number row.
 
-- **Quick swap** (`Q`) — toggles between the last two hotbar slots you used.
-- **Anchored slot** — pin one slot (your pickaxe, your bow, your food). Set it in game by
-  hovering a top-row hotbar slot in the open inventory and pressing `Alt + Q`;
-  press it on the anchored slot again to clear it. The anchored slot carries a small
-  swap-arrows badge in its bottom-right corner, on the on-screen hotbar and in the top row
-  of the open inventory.
-- **Anchor swap** (`Alt + Q`) — swaps to the anchored slot and back, from wherever you are:
-  anchor 8, select 1, and it swaps 8 and 1; select 2, and it swaps 8 and 2. Leave it unbound
-  and the quick swap key takes the anchor on instead, covering both jobs on one key.
+You are chopping wood with the axe on slot 1 and a greydwarf turns up. Tap **Q** for the
+sword on slot 2, deal with it, tap **Q** again, and you are back on the axe. That is the
+whole mod.
+
+- **Quick swap** — one key toggles between the last two hotbar slots you used.
+- **Anchored slot** — pin one slot you keep coming back to, and it becomes one end of every
+  swap. Anchor your pickaxe, then work through slots 3, 4 and 5: the swap key always bounces
+  between the pickaxe and whatever you last had out.
+- Works with anything on the hotbar — weapons, tools, the hammer, food.
+
+Client-side only. It does not need to be installed on the server, and it does not care
+whether anyone else in your world is running it.
 
 ## Keys
 
-| Action | Default | What it does |
+| Action | Default |
+| --- | --- |
+| Swap between the last two slots | `Q` |
+| Swap to the anchored slot and back | `Alt + Q` |
+| Anchor a slot (inventory open, cursor over a top-row slot) | `Alt + Q` |
+
+`Alt + Q` does two jobs, and they never overlap: with the inventory open it sets the anchor,
+with it closed it swaps. Press it on the slot that is already anchored to clear the anchor.
+
+Only the top row of your inventory — the eight hotbar slots — can be anchored.
+
+The anchored slot is marked with a small ⇄ badge in its bottom-right corner, on the hotbar
+and in your inventory, so you can always see which one it is.
+
+## Settings
+
+Press `F1` for the settings window ([ConfigurationManager] — optional but recommended), or
+edit `BepInEx/config/dev.samspel.quickswap.cfg` by hand.
+
+| Setting | Default | What it does |
 | --- | --- | --- |
-| Quick swap key | `Q` | Toggle between the last two hotbar slots you used. |
-| Anchor swap key | `Alt + Q` | Swap to the anchored slot and back. |
-| Set anchor bind | `Alt + Q` | With the inventory open, anchor the hotbar slot under the cursor. |
+| Enabled | `true` | Master switch for every hotkey. |
+| Quick swap key | `Q` | Toggles between the last two slots used. |
+| Anchor swap key | `Alt + Q` | Swaps to the anchored slot and back. |
+| Set anchor bind | `Alt + Q` | Anchors the hotbar slot under your cursor. |
+| Anchored slot | `0` | `0` = none. Normally set in game rather than here. |
+| Show anchor marker | `true` | The ⇄ badge on the anchored slot. |
+| Marker colour | `#FFD24AF2` | Badge colour, `#RRGGBB` or `#RRGGBBAA`. |
+| Only remember equipment | `true` | Eating or drinking will not overwrite your swap history. |
+| Show HUD messages | `true` | Brief message when the anchored slot changes. |
 
-`Alt + Q` doing two jobs is not a clash: setting the anchor only happens while the
-inventory is open, swapping only while it is closed. One combination, one anchor concept.
+Two settings are worth knowing about:
 
-If `Alt + Q` clashes with something else you run, rebind it under `F1` → **Quick Swap**.
+**Only remember equipment** is why eating a meal does not count as "the last slot you used".
+Turn it off if you would rather the swap key treat food and mead like anything else.
 
-Leaving **Anchor swap key** unbound hands the anchor back to the quick swap key, which then
-covers both jobs on `Q` alone. There is no setting for that — the binding *is* the setting,
-and the load line in the log says which way it resolved:
+**Anchor swap key** decides which key owns the anchor. Leave it unbound and the quick swap
+key takes the anchor on itself, so `Q` alone does everything. Bind it — as it is by default —
+and `Q` goes back to plain last-two-slots swapping while the anchor lives on its own key.
 
-```
-Binds - quick swap: Q | anchor swap: Q + LeftAlt | set anchor: Q + LeftAlt | anchor handled by the anchor swap key
-```
+## Installation
 
-## Requirements
+**With a mod manager** (recommended) — install through r2modman or Thunderstore Mod Manager
+and launch the game from there.
 
-- Valheim with BepInEx 5.4.x
-- [ConfigurationManager](https://valheim.thunderstore.io/package/Azumatt/Azus_UnOfficial_ConfigManager/)
-  for the in-game `F1` settings window (optional — the config file works without it)
-- [ScriptEngine](https://github.com/BepInEx/BepInEx.Debug/releases) for hot reload (development only)
+**By hand** — install [BepInEx for Valheim], then drop `QuickSwap.dll` into
+`BepInEx/plugins/`.
 
-## Configuration
+## Notes
 
-Press `F1` in game and pick **Quick Swap**, or edit
-`BepInEx/config/dev.samspel.quickswap.cfg` directly.
+- `Q` is unbound in vanilla Valheim, which is why it is the default. If another mod claims
+  it, rebind under `F1`.
+- Swapping to an empty slot does nothing, so the swap key will not leave you empty-handed.
+- If a swap key does nothing at all, check `BepInEx/LogOutput.log` — Quick Swap prints its
+  bindings on every load, including when two of them collide.
 
-| Section | Setting | Default | What it does |
-| --- | --- | --- | --- |
-| General | Enabled | `true` | Master switch for every hotkey. |
-| Keys | Quick swap key | `Q` | Last two slots used, plus the anchor while no anchor swap key is bound. |
-| Keys | Anchor swap key | `Alt + Q` | Optional. Binding it takes the anchor off the quick swap key. |
-| Keys | Set anchor bind | `Alt + Q` | Held over a hotbar slot with the inventory open, anchors it. |
-| Anchor | Anchored slot | `0` | `0` = none. Normally set with the set anchor bind in game. |
-| Anchor | Show anchor marker | `true` | Badges the anchored slot on the hotbar and in the inventory. |
-| Anchor | Marker colour | `#FFD24AF2` | Arrow colour, `#RRGGBB` or `#RRGGBBAA`. |
-| Behaviour | Only remember equipment | `true` | Eating or drinking won't overwrite your swap history. |
-| Behaviour | Show HUD messages | `true` | Brief top-left message when the anchor changes. |
-
-`Q` is unbound in vanilla Valheim, which is why it is the default here.
-
-Defaults only apply to settings that are not already in the config file, so a config written
-by an earlier version keeps whatever keys it has. Change them under `F1`, or delete
-`dev.samspel.quickswap.cfg` with the game closed to start from the stock defaults.
-
-## Building
-
-The project needs the .NET SDK (8.0 or newer) and resolves its references straight out of
-your Valheim and BepInEx folders — no NuGet game assemblies, so it always matches the
-version you actually run.
-
-```powershell
-dotnet build QuickSwap/QuickSwap.csproj
-```
-
-If your Valheim install or r2modman profile lives somewhere other than the defaults, copy
-`Environment.props.example` to `Environment.props` and edit the paths. That file is
-git-ignored, so the project stays portable.
-
-## Hot reload
-
-Every build deploys itself — there is no separate install step and no script to run.
-
-| Command | Goes to | Effect |
-| --- | --- | --- |
-| `dotnet build QuickSwap/QuickSwap.csproj` | `BepInEx/scripts/` | ScriptEngine reloads it live |
-| `... -p:HotReload=false` | `BepInEx/plugins/QuickSwap/` | Normal install, restart Valheim |
-| `... -p:Deploy=false` | `bin/` only | Leaves the game profile alone |
-
-The defaults live in `Environment.props`, so you can flip them there instead of passing `-p:`
-every time. Each target clears the other location first: two copies of the same BepInPlugin
-GUID is a conflict, not a choice.
-
-To rebuild on every save, leave this running:
-
-```powershell
-dotnet watch --project QuickSwap/QuickSwap.csproj build
-```
-
-Save a source file and the mod rebuilds, redeploys and reloads in the live game a second or
-two later. To reload by hand instead, press `F6` in game.
-
-ScriptEngine settings live in `BepInEx/config/com.bepis.bepinex.scriptengine.cfg`:
-`LoadOnStart` loads the mod at launch, `EnableFileSystemWatcher` does the automatic reload,
-and `ReloadKey` is the manual one.
-
-The plugin unpatches itself in `OnDestroy`, so reloading does not stack duplicate Harmony
-patches — but static state (your current and previous slot) resets on each reload, which is
-expected. Every build stamps its timestamp into the assembly and logs it on load, so the
-`[Quick Swap]` line in `LogOutput.log` tells you exactly which DLL is running.
-
-## How it works
-
-`Player.UseHotbarItem(int index)` is the single funnel every hotbar activation goes through —
-number keys, gamepad hotbar, and this mod's own swaps. A Harmony prefix/postfix pair around it
-records the slot, but only when the slot really held something (and, by default, only when that
-something was equipment). Both swap actions then just call `UseHotbarItem` again, so the game
-does all the real work of equipping and the mod never has to model the player's inventory.
-
-Two details are easy to get wrong and worth naming:
-
-- **Keybinds are not checked with `KeyboardShortcut.IsDown`.** That method also requires that
-  no other key on the keyboard is held, which is right for a settings-menu chord but wrong for
-  a gameplay bind — holding `W` to run would silently kill a bare `Q` shortcut.
-  `Shortcuts.Triggered` checks only the keys the shortcut actually names.
-- **Which key owns the anchor is derived, not configured.** An explicit switch alongside the
-  keybinds could contradict them, and a carried-over config on the losing side of that
-  contradiction looks exactly like the anchor being ignored at random. Binding a key for the
-  anchor is already an unambiguous statement of intent, so that is the only input.
-- **An empty history plus an anchor used to be a dead end.** The first press jumped to the
-  anchor with nothing recorded behind it, so the next press had nowhere to go and the key
-  looked broken. That is not an exotic state — it is every fresh login, and every hot reload,
-  because the history is static. The swap now seeds itself from whatever is equipped.
-- **A bare `Q` also fires on `Alt + Q`.** That follows from checking only the keys a
-  shortcut names, which is what keeps binds alive while you hold W to run — so the two
-  default swap keys share a main key and testing them in a fixed order would let whichever
-  came first swallow the other. The one with more modifiers is tried first instead.
-- **A shortcut asking for left alt accepts right alt** (likewise shift and control).
-  Nobody binding "alt + Q" means one alt key in particular.
-- **Whether a hotkey may fire is `Player.TakeInput`'s call, not ours.** That is the game's own
-  gate on walking, attacking and the vanilla hotbar keys, so chat, the inventory, the map,
-  menus, text viewers, death, cutscenes and teleporting are all covered for free — and stay
-  covered if the game adds another case.
-
-## Layout
-
-```
-QuickSwap/
-  QuickSwapPlugin.cs                 plugin entry, Update loop, anchor-on-middle-click
-  SwapController.cs                  slot history and the two swap actions
-  ModConfig.cs                       every setting
-  AnchorMarker.cs                    the badge on the hotbar and in the inventory
-  MarkerSprite.cs                    loads the embedded swap-arrows glyph
-  GameGuards.cs                      when hotkeys are allowed to fire
-  Shortcuts.cs                       keybind check that survives held movement keys
-  Notifier.cs                        HUD messages
-  ConfigurationManagerAttributes.cs  metadata for the F1 window
-  Patches/PlayerPatches.cs           records hotbar usage
-  Patches/HotkeyBarPatches.cs        repaints the anchor marker on the hotbar
-  Patches/InventoryGridPatches.cs    repaints the anchor marker in the inventory
-  Assets/anchor-arrows.png           the badge glyph, embedded in the DLL
-
-art/make_icon.py                     draws both the Thunderstore icon and that glyph
-```
-
-Both images come out of one script, so the badge in game and the arrows on the store page
-are the same drawing at different sizes. Regenerate with `python art/make_icon.py`.
+[ConfigurationManager]: https://valheim.thunderstore.io/package/Azumatt/Azus_UnOfficial_ConfigManager/
+[BepInEx for Valheim]: https://valheim.thunderstore.io/package/denikson/BepInExPack_Valheim/

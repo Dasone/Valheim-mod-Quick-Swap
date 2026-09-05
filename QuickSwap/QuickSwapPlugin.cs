@@ -2,7 +2,6 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using UnityEngine;
 
 namespace QuickSwap
 {
@@ -117,8 +116,9 @@ namespace QuickSwap
         }
 
         /// <summary>
-        /// Nothing is bound out of the box, so the log has to say so — otherwise a mod that
-        /// loads fine and then does nothing looks broken rather than merely unconfigured.
+        /// States the effective binds on load. Two of them can be cleared or pointed at the
+        /// same key, and a mod that loads fine and then does nothing looks broken rather
+        /// than merely unconfigured — so the log has to be able to tell those apart.
         /// </summary>
         private static void LogBindings()
         {
@@ -128,28 +128,23 @@ namespace QuickSwap
                         + " | anchor handled by the "
                         + (ModConfig.HasDedicatedAnchorKey() ? "anchor swap" : "quick swap") + " key");
 
-            if (!IsUnbound(ModConfig.AnchorSwapKey)
+            if (ModConfig.AnchorSwapKey.Value.IsBound()
                 && ModConfig.AnchorSwapKey.Value.Equals(ModConfig.QuickSwapKey.Value))
             {
                 Log.LogWarning("Quick swap and anchor swap are bound to the same key, so only quick swap fires. "
                                + "Give the anchor its own key, or leave it unbound and quick swap will handle it.");
             }
 
-            if (IsUnbound(ModConfig.QuickSwapKey) && IsUnbound(ModConfig.AnchorSwapKey)
-                && IsUnbound(ModConfig.SetAnchorBind))
+            if (!ModConfig.QuickSwapKey.Value.IsBound() && !ModConfig.AnchorSwapKey.Value.IsBound()
+                && !ModConfig.SetAnchorBind.Value.IsBound())
             {
                 Log.LogWarning("No keys are bound, so nothing will happen yet. Bind them under F1 -> Quick Swap.");
             }
         }
 
-        private static bool IsUnbound(ConfigEntry<KeyboardShortcut> entry)
-        {
-            return entry.Value.MainKey == KeyCode.None;
-        }
-
         private static string Describe(KeyboardShortcut shortcut)
         {
-            return shortcut.MainKey == KeyCode.None ? "unbound" : shortcut.ToString();
+            return shortcut.IsBound() ? shortcut.ToString() : "unbound";
         }
 
         /// <summary>Anchors (or un-anchors) the top-row inventory slot under the mouse.</summary>

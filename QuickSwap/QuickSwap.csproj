@@ -27,6 +27,21 @@
     <NoWarn>$(NoWarn);MSB3277;CS0649;CS0169</NoWarn>
   </PropertyGroup>
 
+  <PropertyGroup Label="Packaging">
+    <ThunderstoreDir>$(MSBuildThisFileDirectory)..\Thunderstore\</ThunderstoreDir>
+    <ThunderstoreManifest>$(ThunderstoreDir)manifest.json</ThunderstoreManifest>
+    <PackageIcon>$(ThunderstoreDir)icon.png</PackageIcon>
+    <PackageReadme>$(MSBuildThisFileDirectory)..\README.md</PackageReadme>
+    <PackageChangelog>$(MSBuildThisFileDirectory)..\CHANGELOG.md</PackageChangelog>
+    <PackageDistDir>$(MSBuildThisFileDirectory)..\dist\</PackageDistDir>
+
+    <!-- Read out of the files themselves, so the Package target can prove the three
+         version numbers agree instead of trusting whoever last bumped one of them. -->
+    <PluginSource>$(MSBuildThisFileDirectory)QuickSwapPlugin.cs</PluginSource>
+    <ManifestVersion Condition="Exists('$(ThunderstoreManifest)')">$([System.Text.RegularExpressions.Regex]::Match($([System.IO.File]::ReadAllText('$(ThunderstoreManifest)')), '"version_number"\s*:\s*"([^"]+)"').Groups[1].Value)</ManifestVersion>
+    <PluginModVersion Condition="Exists('$(PluginSource)')">$([System.Text.RegularExpressions.Regex]::Match($([System.IO.File]::ReadAllText('$(PluginSource)')), 'ModVersion\s*=\s*"([^"]+)"').Groups[1].Value)</PluginModVersion>
+  </PropertyGroup>
+
   <ItemGroup Label="Build-time only">
     <!-- Lets us compile net462 without Visual Studio's targeting packs installed. -->
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
@@ -121,6 +136,49 @@
     <Copy SourceFiles="$(TargetPath);@(_DebugSymbolsIntermediatePath)"
           DestinationFolder="$(PluginDeployDir)" SkipUnchangedFiles="false" ContinueOnError="true" />
     <Message Importance="high" Text="-&gt; Installed $(AssemblyName).dll in $(PluginDeployDir) (restart Valheim to load)" />
+  </Target>
+
+  <!-- ==================================================================
+       Package
+       dotnet build QuickSwap/QuickSwap.csproj -t:Package
+       -> dist/QuickSwap-<version>.zip, ready to upload to Thunderstore.
+
+       Builds Release through a nested MSBuild rather than depending on Build, so
+       Configuration is forced and Deploy is forced off: packaging must never quietly
+       swap the DLL you are playing with for a different configuration.
+       ================================================================== -->
+  <Target Name="Package">
+    <Error Condition="'$(Version)' != '$(ManifestVersion)'"
+           Text="Version mismatch: csproj is '$(Version)' but Thunderstore/manifest.json is '$(ManifestVersion)'. Bump them together." />
+    <Error Condition="'$(Version)' != '$(PluginModVersion)'"
+           Text="Version mismatch: csproj is '$(Version)' but ModVersion in QuickSwapPlugin.cs is '$(PluginModVersion)'. Bump them together." />
+    <Error Condition="!Exists('$(PackageIcon)')"
+           Text="Icon not found: $(PackageIcon). Thunderstore requires a 256x256 icon.png - run 'python art/make_icon.py'." />
+    <Error Condition="!Exists('$(PackageChangelog)')"
+           Text="Changelog not found: $(PackageChangelog). Thunderstore renders CHANGELOG.md as its own tab, and a release with no entry is worse than no tab at all." />
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Build"
+             Properties="Configuration=Release;Deploy=false">
+      <Output TaskParameter="TargetOutputs" ItemName="_PackagedAssembly" />
+    </MSBuild>
+
+    <PropertyGroup>
+      <PackageStageDir>$(MSBuildThisFileDirectory)obj\package\</PackageStageDir>
+      <PackageZip>$(PackageDistDir)$(AssemblyName)-$(Version).zip</PackageZip>
+    </PropertyGroup>
+
+    <!-- Staged from scratch every time, so a renamed or deleted file cannot linger
+         in the zip from a previous run. -->
+    <RemoveDir Directories="$(PackageStageDir)" />
+    <MakeDir Directories="$(PackageStageDir);$(PackageStageDir)plugins;$(PackageDistDir)" />
+
+    <Copy SourceFiles="$(ThunderstoreManifest);$(PackageReadme);$(PackageChangelog);$(PackageIcon)"
+          DestinationFolder="$(PackageStageDir)" />
+    <Copy SourceFiles="@(_PackagedAssembly)" DestinationFolder="$(PackageStageDir)plugins" />
+
+    <Delete Files="$(PackageZip)" />
+    <ZipDirectory SourceDirectory="$(PackageStageDir)" DestinationFile="$(PackageZip)" />
+    <Message Importance="high" Text="-&gt; Packaged $(PackageZip)" />
   </Target>
 
 </Project>

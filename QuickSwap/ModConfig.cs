@@ -5,7 +5,7 @@ namespace QuickSwap
 {
     /// <summary>
     /// Every setting the mod exposes. Rendered by ConfigurationManager (F1) and
-    /// written to BepInEx/config/samuel.haggren.quickswap.cfg.
+    /// written to BepInEx/config/dev.samspel.quickswap.cfg.
     /// </summary>
     internal static class ModConfig
     {
@@ -22,8 +22,11 @@ namespace QuickSwap
         internal static ConfigEntry<bool> OnlyTrackEquipment;
         internal static ConfigEntry<bool> ShowMessages;
 
-        private static Color _cachedColor = new Color(1f, 0.82f, 0.29f, 0.95f);
-        private static string _cachedColorText;
+        /// <summary>Amber. Also the fallback when a hand-edited colour will not parse.</summary>
+        private const string DefaultMarkerColour = "#FFD24AF2";
+
+        private static Color _cachedColour;
+        private static string _cachedColourText;
 
         internal static void Init(ConfigFile config)
         {
@@ -54,12 +57,12 @@ namespace QuickSwap
 
             ShowAnchorMarker = config.Bind(
                 "3 - Anchor", "Show anchor marker", true,
-                new ConfigDescription("Outline the anchored slot, both on the on-screen hotbar and in the top row of the open inventory.",
+                new ConfigDescription("Show the swap-arrows badge on the anchored slot, both on the on-screen hotbar and in the top row of the open inventory.",
                     null, new ConfigurationManagerAttributes { Order = 50 }));
 
             AnchorMarkerColor = config.Bind(
-                "3 - Anchor", "Marker colour", "#FFD24AF2",
-                new ConfigDescription("Colour of the anchor outline, as #RRGGBB or #RRGGBBAA.",
+                "3 - Anchor", "Marker colour", DefaultMarkerColour,
+                new ConfigDescription("Colour of the badge arrows, as #RRGGBB or #RRGGBBAA.",
                     null, new ConfigurationManagerAttributes { Order = 40 }));
 
             OnlyTrackEquipment = config.Bind(
@@ -81,7 +84,7 @@ namespace QuickSwap
         internal static bool HasDedicatedAnchorKey()
         {
             KeyboardShortcut anchorKey = AnchorSwapKey.Value;
-            if (anchorKey.MainKey == KeyCode.None)
+            if (!anchorKey.IsBound())
             {
                 return false;
             }
@@ -91,22 +94,25 @@ namespace QuickSwap
             return !anchorKey.Equals(QuickSwapKey.Value);
         }
 
-        /// <summary>Parsed <see cref="AnchorMarkerColor"/>, falling back to amber on a malformed value.</summary>
+        /// <summary>
+        /// Parsed <see cref="AnchorMarkerColor"/>, falling back to the default on a value
+        /// that will not parse. Cached because this is read on every hotbar redraw.
+        /// </summary>
         internal static Color MarkerColor()
         {
             string text = AnchorMarkerColor.Value;
-            if (text == _cachedColorText)
+            if (text == _cachedColourText)
             {
-                return _cachedColor;
+                return _cachedColour;
             }
 
-            _cachedColorText = text;
-            if (!string.IsNullOrEmpty(text) && ColorUtility.TryParseHtmlString(text, out Color parsed))
+            _cachedColourText = text;
+            if (string.IsNullOrEmpty(text) || !ColorUtility.TryParseHtmlString(text, out _cachedColour))
             {
-                _cachedColor = parsed;
+                ColorUtility.TryParseHtmlString(DefaultMarkerColour, out _cachedColour);
             }
 
-            return _cachedColor;
+            return _cachedColour;
         }
     }
 }
