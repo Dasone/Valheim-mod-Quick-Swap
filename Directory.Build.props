@@ -1,19 +1,29 @@
 <Project>
 
   <!--
-    Machine-specific paths live in Directory.Build.user.props (git-ignored).
-    Copy Directory.Build.user.props.example to Directory.Build.user.props and
-    edit it if your Valheim / r2modman install lives somewhere else.
+    Machine-specific path overrides.
+    Copy Environment.props.example -> Environment.props and edit it if your
+    install locations differ. Environment.props is git-ignored on purpose so
+    every developer can point at their own game / profile without conflicts.
   -->
-  <Import Project="$(MSBuildThisFileDirectory)Directory.Build.user.props"
-          Condition="Exists('$(MSBuildThisFileDirectory)Directory.Build.user.props')" />
+  <Import Project="$(MSBuildThisFileDirectory)Environment.props"
+          Condition="Exists('$(MSBuildThisFileDirectory)Environment.props')" />
 
-  <PropertyGroup>
-    <!-- Fallbacks used when Directory.Build.user.props is absent. -->
+  <PropertyGroup Label="Defaults">
     <ValheimDir Condition="'$(ValheimDir)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Valheim</ValheimDir>
-    <ValheimManagedDir Condition="'$(ValheimManagedDir)' == ''">$(ValheimDir)\valheim_Data\Managed</ValheimManagedDir>
-    <BepInExProfileDir Condition="'$(BepInExProfileDir)' == ''">$(AppData)\r2modmanPlus-local\Valheim\profiles\Valheim 1.0\BepInEx</BepInExProfileDir>
-    <BepInExCoreDir Condition="'$(BepInExCoreDir)' == ''">$(BepInExProfileDir)\core</BepInExCoreDir>
+    <R2ModManDir Condition="'$(R2ModManDir)' == ''">$(AppData)\r2modmanPlus-local</R2ModManDir>
+    <R2Profile Condition="'$(R2Profile)' == ''">Valheim 1.0</R2Profile>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Derived paths">
+    <ValheimManagedDir>$(ValheimDir)\valheim_Data\Managed</ValheimManagedDir>
+    <ProfileDir>$(R2ModManDir)\Valheim\profiles\$(R2Profile)</ProfileDir>
+    <BepInExDir>$(ProfileDir)\BepInEx</BepInExDir>
+    <BepInExCoreDir>$(BepInExDir)\core</BepInExCoreDir>
+    <!-- Normal install location: BepInEx/plugins/<AssemblyName>/ -->
+    <PluginDeployDir>$(BepInExDir)\plugins\$(MSBuildProjectName)</PluginDeployDir>
+    <!-- ScriptEngine hot-reload location: BepInEx/scripts/ -->
+    <ScriptsDeployDir>$(BepInExDir)\scripts</ScriptsDeployDir>
   </PropertyGroup>
 
 </Project>

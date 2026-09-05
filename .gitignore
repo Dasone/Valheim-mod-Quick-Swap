@@ -5,8 +5,8 @@ obj/
 *.suo
 .vs/
 
-# Machine-specific paths — copy Directory.Build.user.props.example and edit
-Directory.Build.user.props
+# Machine-specific paths — copy Environment.props.example and edit
+Environment.props
 
 # Packaging
 dist/

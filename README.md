@@ -55,24 +55,35 @@ your Valheim and BepInEx folders — no NuGet game assemblies, so it always matc
 version you actually run.
 
 ```powershell
-.\build.ps1
+dotnet build QuickSwap/QuickSwap.csproj
 ```
 
-If your Valheim or r2modman profile lives somewhere other than the defaults, copy
-`Directory.Build.user.props.example` to `Directory.Build.user.props` and edit the paths.
-That file is git-ignored, so the project stays portable.
+If your Valheim install or r2modman profile lives somewhere other than the defaults, copy
+`Environment.props.example` to `Environment.props` and edit the paths. That file is
+git-ignored, so the project stays portable.
 
 ## Hot reload
 
-`build.ps1` drops the Debug build into `BepInEx/scripts/`, which BepInEx's **ScriptEngine**
-plugin loads and can reload without restarting the game.
+Every build deploys itself — there is no separate install step and no script to run.
+
+| Command | Goes to | Effect |
+| --- | --- | --- |
+| `dotnet build QuickSwap/QuickSwap.csproj` | `BepInEx/scripts/` | ScriptEngine reloads it live |
+| `... -p:HotReload=false` | `BepInEx/plugins/QuickSwap/` | Normal install, restart Valheim |
+| `... -p:Deploy=false` | `bin/` only | Leaves the game profile alone |
+
+The defaults live in `Environment.props`, so you can flip them there instead of passing `-p:`
+every time. Each target clears the other location first: two copies of the same BepInPlugin
+GUID is a conflict, not a choice.
+
+To rebuild on every save, leave this running:
 
 ```powershell
-.\build.ps1 -Watch
+dotnet watch --project QuickSwap/QuickSwap.csproj build
 ```
 
-Leave that running, save a source file, and the mod rebuilds and reloads in the live game a
-second or two later. To reload by hand instead, press `F6` in game.
+Save a source file and the mod rebuilds, redeploys and reloads in the live game a second or
+two later. To reload by hand instead, press `F6` in game.
 
 ScriptEngine settings live in `BepInEx/config/com.bepis.bepinex.scriptengine.cfg`:
 `LoadOnStart` loads the mod at launch, `EnableFileSystemWatcher` does the automatic reload,
@@ -80,16 +91,8 @@ and `ReloadKey` is the manual one.
 
 The plugin unpatches itself in `OnDestroy`, so reloading does not stack duplicate Harmony
 patches — but static state (your current and previous slot) resets on each reload, which is
-expected.
-
-## Permanent install
-
-```powershell
-.\uninstall-dev.ps1   # drop the hot-reload copy first
-.\build.ps1 -Release  # installs to BepInEx\plugins\Samuel-QuickSwap
-```
-
-Running both copies at once trips BepInEx's duplicate-GUID check, so only ever keep one.
+expected. Every build stamps its timestamp into the assembly and logs it on load, so the
+`[Quick Swap]` line in `LogOutput.log` tells you exactly which DLL is running.
 
 ## How it works
 
@@ -99,15 +102,27 @@ records the slot, but only when the slot really held something (and, by default,
 something was equipment). Both swap actions then just call `UseHotbarItem` again, so the game
 does all the real work of equipping and the mod never has to model the player's inventory.
 
+Two details are easy to get wrong and worth naming:
+
+- **Keybinds are not checked with `KeyboardShortcut.IsDown`.** That method also requires that
+  no other key on the keyboard is held, which is right for a settings-menu chord but wrong for
+  a gameplay bind — holding `W` to run would silently kill a bare `Q` shortcut.
+  `Shortcuts.Triggered` checks only the keys the shortcut actually names.
+- **Whether a hotkey may fire is `Player.TakeInput`'s call, not ours.** That is the game's own
+  gate on walking, attacking and the vanilla hotbar keys, so chat, the inventory, the map,
+  menus, text viewers, death, cutscenes and teleporting are all covered for free — and stay
+  covered if the game adds another case.
+
 ## Layout
 
 ```
-src/QuickSwap/
+QuickSwap/
   QuickSwapPlugin.cs                 plugin entry, Update loop, anchor-on-middle-click
   SwapController.cs                  slot history and the two swap actions
   ModConfig.cs                       every setting
   AnchorMarker.cs                    the coloured bar on the hotbar
   GameGuards.cs                      when hotkeys are allowed to fire
+  Shortcuts.cs                       keybind check that survives held movement keys
   Notifier.cs                        HUD messages
   ConfigurationManagerAttributes.cs  metadata for the F1 window
   Patches/PlayerPatches.cs           records hotbar usage

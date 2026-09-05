@@ -1,0 +1,119 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Valheim's Unity 6 Mono runtime speaks the .NET Framework profile. -->
+    <TargetFramework>net462</TargetFramework>
+    <AssemblyName>QuickSwap</AssemblyName>
+    <RootNamespace>QuickSwap</RootNamespace>
+    <Product>Quick Swap</Product>
+    <Description>Toggle between your last two used Valheim hotbar slots, plus an anchored slot.</Description>
+    <Version>1.0.0</Version>
+    <Company>Samuel Haggren</Company>
+    <LangVersion>latest</LangVersion>
+
+    <!-- Mono reads portable PDBs; this gives real line numbers in BepInEx stack traces. -->
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+
+    <!-- A BepInEx plugin is a bare DLL: no deps.json, no ref assembly, no
+         NuGet payload copied next to it. -->
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+
+    <!-- MSB3277: Unity ships several assemblies at conflicting versions; harmless here. -->
+    <NoWarn>$(NoWarn);MSB3277;CS0649;CS0169</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup Label="Build-time only">
+    <!-- Lets us compile net462 without Visual Studio's targeting packs installed. -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <!-- Publicizes the game assemblies below so private/internal/protected members
+         (InventoryGrid.Element, HotkeyBar.m_elements, Player.TakeInput, ...) are
+         reachable from mod code. -->
+    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.3" PrivateAssets="all" ExcludeAssets="runtime" />
+  </ItemGroup>
+
+  <ItemGroup Label="Valheim game assemblies">
+    <Reference Include="$(ValheimManagedDir)\assembly_valheim.dll" Publicize="true" Private="false" />
+    <Reference Include="$(ValheimManagedDir)\assembly_utils.dll" Publicize="true" Private="false" />
+  </ItemGroup>
+
+  <ItemGroup Label="Unity engine assemblies">
+    <Reference Include="$(ValheimManagedDir)\UnityEngine*.dll" Private="false" />
+    <Reference Include="$(ValheimManagedDir)\Unity.*.dll" Private="false" />
+    <Reference Include="$(ValheimManagedDir)\netstandard.dll" Private="false" />
+  </ItemGroup>
+
+  <ItemGroup Label="Modding stack (from the active r2modman profile)">
+    <Reference Include="$(BepInExCoreDir)\BepInEx.dll" Private="false" />
+    <Reference Include="$(BepInExCoreDir)\0Harmony.dll" Private="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\Directory.Build.props" Link="Directory.Build.props" />
+    <None Include="..\README.md" Link="README.md" />
+  </ItemGroup>
+
+  <!-- Bakes the build timestamp into the assembly, so the startup log line can prove
+       which DLL is actually running after a hot reload. Regenerated every build. -->
+  <Target Name="GenerateBuildInfo" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <BuildInfoPath>$(IntermediateOutputPath)BuildInfo.g.cs</BuildInfoPath>
+      <BuildStamp>$([System.DateTime]::Now.ToString('yyyy-MM-dd HH:mm:ss'))</BuildStamp>
+    </PropertyGroup>
+    <ItemGroup>
+      <BuildInfoLine Include="// &lt;auto-generated /&gt; Rewritten on every build - do not edit." />
+      <BuildInfoLine Include="namespace QuickSwap" />
+      <BuildInfoLine Include="{" />
+      <BuildInfoLine Include="    internal static class BuildInfo" />
+      <BuildInfoLine Include="    {" />
+      <BuildInfoLine Include="        internal const string BuildTime = &quot;$(BuildStamp)&quot;%3B" />
+      <BuildInfoLine Include="        internal const string Configuration = &quot;$(Configuration)&quot;%3B" />
+      <BuildInfoLine Include="    }" />
+      <BuildInfoLine Include="}" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(BuildInfoPath)" Lines="@(BuildInfoLine)" Overwrite="true" WriteOnlyWhenDifferent="false" />
+    <ItemGroup>
+      <Compile Include="$(BuildInfoPath)" />
+      <FileWrites Include="$(BuildInfoPath)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="VerifyPaths" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="!Exists('$(ValheimManagedDir)\assembly_valheim.dll')"
+           Text="Valheim assemblies not found: $(ValheimManagedDir). Set &lt;ValheimDir&gt; in Environment.props." />
+    <Error Condition="!Exists('$(BepInExCoreDir)\BepInEx.dll')"
+           Text="BepInEx not found: $(BepInExCoreDir). Install BepInEx in the '$(R2Profile)' r2modman profile, or set &lt;R2Profile&gt; in Environment.props." />
+  </Target>
+
+  <!-- ==================================================================
+       Deploy
+       dotnet build                      -> BepInEx/scripts/   (ScriptEngine reload)
+       dotnet build -p:HotReload=false   -> BepInEx/plugins/QuickSwap/
+       dotnet build -p:Deploy=false      -> no copy at all
+
+       Each target clears the other location first: two copies of the same
+       BepInPlugin GUID is a conflict, not a choice, and which one wins is not
+       something to rely on.
+       ================================================================== -->
+  <Target Name="DeployHotReload" AfterTargets="Build"
+          Condition="'$(Deploy)' != 'false' And '$(HotReload)' != 'false'">
+    <Delete Files="$(PluginDeployDir)\$(AssemblyName).dll;$(PluginDeployDir)\$(AssemblyName).pdb" ContinueOnError="true" />
+    <MakeDir Directories="$(ScriptsDeployDir)" />
+    <Copy SourceFiles="$(TargetPath);@(_DebugSymbolsIntermediatePath)"
+          DestinationFolder="$(ScriptsDeployDir)" SkipUnchangedFiles="false" ContinueOnError="true" />
+    <Message Importance="high" Text="-&gt; Hot-reloaded $(AssemblyName).dll into $(ScriptsDeployDir) (ScriptEngine picks it up in ~1.5s)" />
+  </Target>
+
+  <Target Name="DeployPlugin" AfterTargets="Build"
+          Condition="'$(Deploy)' != 'false' And '$(HotReload)' == 'false'">
+    <Delete Files="$(ScriptsDeployDir)\$(AssemblyName).dll;$(ScriptsDeployDir)\$(AssemblyName).pdb" ContinueOnError="true" />
+    <MakeDir Directories="$(PluginDeployDir)" />
+    <Copy SourceFiles="$(TargetPath);@(_DebugSymbolsIntermediatePath)"
+          DestinationFolder="$(PluginDeployDir)" SkipUnchangedFiles="false" ContinueOnError="true" />
+    <Message Importance="high" Text="-&gt; Installed $(AssemblyName).dll in $(PluginDeployDir) (restart Valheim to load)" />
+  </Target>
+
+</Project>

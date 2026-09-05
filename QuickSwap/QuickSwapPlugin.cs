@@ -31,7 +31,7 @@ namespace QuickSwap
             _harmony = new Harmony(Guid);
             _harmony.PatchAll(typeof(QuickSwapPlugin).Assembly);
 
-            Log.LogInfo(Name + " " + Version + " loaded.");
+            Log.LogInfo(Name + " " + Version + " loaded (" + BuildInfo.Configuration + " build, " + BuildInfo.BuildTime + ").");
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace QuickSwap
 
             if (InventoryGui.IsVisible())
             {
-                if (ModConfig.SetAnchorBind.Value.IsDown())
+                if (ModConfig.SetAnchorBind.Value.Triggered())
                 {
                     TrySetAnchorUnderCursor();
                 }
@@ -74,16 +74,16 @@ namespace QuickSwap
                 return;
             }
 
-            if (!GameGuards.AcceptsGameplayInput())
+            if (!GameGuards.AcceptsGameplayInput(player))
             {
                 return;
             }
 
-            if (ModConfig.QuickSwapKey.Value.IsDown())
+            if (ModConfig.QuickSwapKey.Value.Triggered())
             {
                 SwapController.QuickSwap();
             }
-            else if (ModConfig.AnchorSwapKey.Value.IsDown())
+            else if (ModConfig.AnchorSwapKey.Value.Triggered())
             {
                 SwapController.AnchorSwap();
             }
