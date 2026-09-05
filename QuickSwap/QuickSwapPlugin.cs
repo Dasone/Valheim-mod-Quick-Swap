@@ -91,7 +91,7 @@ namespace QuickSwap
         /// Fires whichever swap key was pressed, preferring the more specific combination.
         /// </summary>
         /// <remarks>
-        /// The default binds are Q and shift+Q, which share a main key, so shift+Q also
+        /// The default binds are Q and alt+Q, which share a main key, so alt+Q also
         /// satisfies the bare Q. Testing in a fixed order would let whichever came first
         /// swallow the other; the modifier count decides instead. A tie means both are
         /// bound to the same combination, which <see cref="ModConfig.HasDedicatedAnchorKey"/>

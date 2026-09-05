@@ -38,12 +38,12 @@ namespace QuickSwap
                     null, new ConfigurationManagerAttributes { Order = 90 }));
 
             AnchorSwapKey = config.Bind(
-                "2 - Keys", "Anchor swap key", new KeyboardShortcut(KeyCode.Q, KeyCode.LeftShift),
+                "2 - Keys", "Anchor swap key", new KeyboardShortcut(KeyCode.Q, KeyCode.LeftAlt),
                 new ConfigDescription("Swaps to the anchored slot and back. Leave this unbound and the quick swap key handles the anchor instead; bind it and it takes the anchor over completely, leaving the quick swap key on plain last-two-slots swapping. Defaults to the same combination as the set anchor bind, which is not a clash: that one only does anything while the inventory is open, this one only while it is closed.",
                     null, new ConfigurationManagerAttributes { Order = 80 }));
 
             SetAnchorBind = config.Bind(
-                "2 - Keys", "Set anchor bind", new KeyboardShortcut(KeyCode.Q, KeyCode.LeftShift),
+                "2 - Keys", "Set anchor bind", new KeyboardShortcut(KeyCode.Q, KeyCode.LeftAlt),
                 new ConfigDescription("Press this while hovering a top-row hotbar slot in the open inventory to anchor it. Press it on the anchored slot again to clear the anchor. Only does anything while the inventory is open, so it can safely share a combination with the anchor swap key.",
                     null, new ConfigurationManagerAttributes { Order = 70 }));
 
