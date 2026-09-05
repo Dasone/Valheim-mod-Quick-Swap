@@ -1,0 +1,12 @@
+# Build output
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Machine-specific paths — copy Directory.Build.user.props.example and edit
+Directory.Build.user.props
+
+# Packaging
+dist/

@@ -1,0 +1,97 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>QuickSwap</AssemblyName>
+    <RootNamespace>QuickSwap</RootNamespace>
+    <Version>1.0.0</Version>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <Company>Samuel Haggren</Company>
+    <Product>Quick Swap</Product>
+    <Description>Toggle between your last two used Valheim hotbar slots, plus an anchored slot.</Description>
+
+    <!-- Unity/BepInEx assemblies are resolved by HintPath; don't drag in a NuGet framework. -->
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <DebugType>portable</DebugType>
+    <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
+
+    <!-- Debug  -> BepInEx/scripts  (ScriptEngine hot reload)
+         Release -> BepInEx/plugins/Samuel-QuickSwap (permanent install) -->
+    <DeployDir Condition="'$(Configuration)' == 'Debug'">$(BepInExProfileDir)\scripts</DeployDir>
+    <DeployDir Condition="'$(Configuration)' == 'Release'">$(BepInExProfileDir)\plugins\Samuel-QuickSwap</DeployDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.3" PrivateAssets="all" ExcludeAssets="runtime" />
+  </ItemGroup>
+
+  <!-- Game code. Publicized so we can touch InventoryGrid.Element / HotkeyBar.ElementData. -->
+  <ItemGroup>
+    <Reference Include="assembly_valheim" Publicize="true" Private="false">
+      <HintPath>$(ValheimManagedDir)\assembly_valheim.dll</HintPath>
+    </Reference>
+    <Reference Include="assembly_utils" Private="false">
+      <HintPath>$(ValheimManagedDir)\assembly_utils.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Unity -->
+  <ItemGroup>
+    <Reference Include="UnityEngine" Private="false">
+      <HintPath>$(ValheimManagedDir)\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule" Private="false">
+      <HintPath>$(ValheimManagedDir)\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI" Private="false">
+      <HintPath>$(ValheimManagedDir)\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule" Private="false">
+      <HintPath>$(ValheimManagedDir)\UnityEngine.UIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule" Private="false">
+      <HintPath>$(ValheimManagedDir)\UnityEngine.InputLegacyModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule" Private="false">
+      <HintPath>$(ValheimManagedDir)\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule" Private="false">
+      <HintPath>$(ValheimManagedDir)\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro" Private="false">
+      <HintPath>$(ValheimManagedDir)\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
+    <Reference Include="netstandard" Private="false">
+      <HintPath>$(ValheimManagedDir)\netstandard.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <!-- BepInEx -->
+  <ItemGroup>
+    <Reference Include="BepInEx" Private="false">
+      <HintPath>$(BepInExCoreDir)\BepInEx.dll</HintPath>
+    </Reference>
+    <Reference Include="0Harmony" Private="false">
+      <HintPath>$(BepInExCoreDir)\0Harmony.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="VerifyModPaths" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="!Exists('$(ValheimManagedDir)\assembly_valheim.dll')"
+           Text="Valheim assemblies not found at '$(ValheimManagedDir)'. Set &lt;ValheimDir&gt; in Directory.Build.user.props (see Directory.Build.user.props.example)." />
+    <Error Condition="!Exists('$(BepInExCoreDir)\BepInEx.dll')"
+           Text="BepInEx not found at '$(BepInExCoreDir)'. Set &lt;BepInExProfileDir&gt; in Directory.Build.user.props (see Directory.Build.user.props.example)." />
+  </Target>
+
+  <Target Name="DeployToGame" AfterTargets="Build" Condition="'$(DeployDir)' != ''">
+    <MakeDir Directories="$(DeployDir)" />
+    <Copy SourceFiles="$(TargetPath);$(TargetDir)$(TargetName).pdb"
+          DestinationFolder="$(DeployDir)"
+          SkipUnchangedFiles="false"
+          ContinueOnError="true" />
+    <Message Importance="high" Text="QuickSwap -> $(DeployDir)" />
+  </Target>
+
+</Project>

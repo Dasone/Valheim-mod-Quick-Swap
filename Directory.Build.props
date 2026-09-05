@@ -1,0 +1,19 @@
+<Project>
+
+  <!--
+    Machine-specific paths live in Directory.Build.user.props (git-ignored).
+    Copy Directory.Build.user.props.example to Directory.Build.user.props and
+    edit it if your Valheim / r2modman install lives somewhere else.
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)Directory.Build.user.props"
+          Condition="Exists('$(MSBuildThisFileDirectory)Directory.Build.user.props')" />
+
+  <PropertyGroup>
+    <!-- Fallbacks used when Directory.Build.user.props is absent. -->
+    <ValheimDir Condition="'$(ValheimDir)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Valheim</ValheimDir>
+    <ValheimManagedDir Condition="'$(ValheimManagedDir)' == ''">$(ValheimDir)\valheim_Data\Managed</ValheimManagedDir>
+    <BepInExProfileDir Condition="'$(BepInExProfileDir)' == ''">$(AppData)\r2modmanPlus-local\Valheim\profiles\Valheim 1.0\BepInEx</BepInExProfileDir>
+    <BepInExCoreDir Condition="'$(BepInExCoreDir)' == ''">$(BepInExProfileDir)\core</BepInExCoreDir>
+  </PropertyGroup>
+
+</Project>
