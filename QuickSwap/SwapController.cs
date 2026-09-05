@@ -1,7 +1,7 @@
 namespace QuickSwap
 {
     /// <summary>
-    /// Remembers which hotbar slots the local player used, and drives the two swap actions.
+    /// Remembers which hotbar slots the local player used, and drives the swap actions.
     /// Slot numbers are 1-based to match the on-screen hotbar; 0 means "nothing recorded".
     /// </summary>
     internal static class SwapController
@@ -30,36 +30,46 @@ namespace QuickSwap
             Current = slot;
         }
 
-        /// <summary>Toggle back to the previously used slot. Pressing again returns you here.</summary>
+        /// <summary>
+        /// The main swap. With a slot anchored it toggles between the anchor and the last
+        /// other slot you used — anchor 8, select 1, and it swaps 8 and 1; select 2, and it
+        /// swaps 8 and 2. With nothing anchored it toggles the last two slots used.
+        /// </summary>
         internal static void QuickSwap()
         {
+            Player player = Player.m_localPlayer;
+            if (player == null)
+            {
+                return;
+            }
+
+            SeedFromEquipped(player);
+
+            int anchor = ModConfig.AnchorSlot.Value;
+            if (anchor > 0 && ModConfig.AnchorTakesPriority.Value)
+            {
+                SwapAgainst(anchor);
+                return;
+            }
+
             Activate(Previous);
         }
 
         /// <summary>
-        /// The anchor-aware swap. With an anchor set this toggles between the anchored slot
-        /// and the last other slot you used - anchor 2, work on 3 then 4, and this swaps
-        /// 2 and 4. With no anchor set it degrades to the plain <see cref="QuickSwap"/>,
-        /// so a single key covers both situations.
-        /// </summary>
-        internal static void AnchorQuickSwap()
-        {
-            if (ModConfig.AnchorSlot.Value <= 0)
-            {
-                QuickSwap();
-                return;
-            }
-
-            AnchorSwap();
-        }
-
-        /// <summary>
-        /// Jump to the anchored slot, or — if already on it — back to wherever you came from.
-        /// Because <see cref="Record"/> runs on the way in, "where you came from" is just
-        /// <see cref="Previous"/>, which is what makes 3 -> anchor -> 3, 4 -> anchor -> 4 work.
+        /// The anchor-only swap. Same toggle as <see cref="QuickSwap"/> when an anchor is
+        /// set, but never falls back to the last-two-slots behaviour, so a key bound to
+        /// this stays reserved for the anchor.
         /// </summary>
         internal static void AnchorSwap()
         {
+            Player player = Player.m_localPlayer;
+            if (player == null)
+            {
+                return;
+            }
+
+            SeedFromEquipped(player);
+
             int anchor = ModConfig.AnchorSlot.Value;
             if (anchor <= 0)
             {
@@ -67,12 +77,67 @@ namespace QuickSwap
                 return;
             }
 
-            Activate(Current == anchor ? Previous : anchor);
+            SwapAgainst(anchor);
+        }
+
+        /// <summary>
+        /// Toggles with <paramref name="anchor"/> permanently as one end: off the anchor,
+        /// go to it; on it, go back to the last other slot.
+        /// </summary>
+        private static void SwapAgainst(int anchor)
+        {
+            if (Current != anchor)
+            {
+                Activate(anchor);
+                return;
+            }
+
+            if (Previous <= 0)
+            {
+                Notifier.Show("Quick Swap: no other slot used yet to swap back to.");
+                return;
+            }
+
+            Activate(Previous);
+        }
+
+        /// <summary>
+        /// Adopts the currently equipped hotbar slot when there is no history yet.
+        /// </summary>
+        /// <remarks>
+        /// Without this, an empty history plus an anchor is a dead end: the first press
+        /// jumps to the anchor with nothing recorded behind it, so the press after that has
+        /// nowhere to go and the key looks broken. That state is not exotic — it is every
+        /// fresh login, and every ScriptEngine hot reload, since the history is static.
+        /// </remarks>
+        private static void SeedFromEquipped(Player player)
+        {
+            if (Current > 0)
+            {
+                return;
+            }
+
+            Inventory inventory = player.GetInventory();
+            if (inventory == null)
+            {
+                return;
+            }
+
+            int width = inventory.GetWidth();
+            for (int x = 0; x < width; x++)
+            {
+                ItemDrop.ItemData item = inventory.GetItemAt(x, 0);
+                if (item != null && item.m_equipped)
+                {
+                    Current = x + 1;
+                    return;
+                }
+            }
         }
 
         private static void Activate(int slot)
         {
-            Player player = global::Player.m_localPlayer;
+            Player player = Player.m_localPlayer;
             if (player == null || slot <= 0)
             {
                 return;

@@ -88,10 +88,6 @@ namespace QuickSwap
             {
                 SwapController.QuickSwap();
             }
-            else if (ModConfig.AnchorQuickSwapKey.Value.Triggered())
-            {
-                SwapController.AnchorQuickSwap();
-            }
             else if (ModConfig.AnchorSwapKey.Value.Triggered())
             {
                 SwapController.AnchorSwap();
@@ -105,12 +101,11 @@ namespace QuickSwap
         private static void LogBindings()
         {
             Log.LogInfo("Binds - quick swap: " + Describe(ModConfig.QuickSwapKey.Value)
-                        + " | anchor quick swap: " + Describe(ModConfig.AnchorQuickSwapKey.Value)
                         + " | anchor swap: " + Describe(ModConfig.AnchorSwapKey.Value)
                         + " | set anchor: " + Describe(ModConfig.SetAnchorBind.Value));
 
-            if (IsUnbound(ModConfig.QuickSwapKey) && IsUnbound(ModConfig.AnchorQuickSwapKey)
-                && IsUnbound(ModConfig.AnchorSwapKey) && IsUnbound(ModConfig.SetAnchorBind))
+            if (IsUnbound(ModConfig.QuickSwapKey) && IsUnbound(ModConfig.AnchorSwapKey)
+                && IsUnbound(ModConfig.SetAnchorBind))
             {
                 Log.LogWarning("No keys are bound, so nothing will happen yet. Bind them under F1 -> Quick Swap.");
             }

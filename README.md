@@ -2,17 +2,15 @@
 
 A Valheim BepInEx mod for bouncing between hotbar slots without reaching for the number row.
 
-- **Quick swap** — one key toggles between the last two hotbar slots you used. On slot 1,
-  press 2, then tap the key to go back to 1, tap again for 2, and so on.
+- **Quick swap** — your main key. With a slot anchored it toggles between the anchor and
+  the last *other* slot you used: anchor 8, select 1, and it swaps 8 and 1; select 2, and it
+  swaps 8 and 2. With nothing anchored it toggles between the last two slots you used.
 - **Anchored slot** — pin one slot (your pickaxe, your bow, your food). Set it in game by
   hovering a top-row hotbar slot in the open inventory and pressing the set anchor bind;
   press it on the anchored slot again to clear it. A small coloured bar marks the anchored
   slot on the on-screen hotbar.
-- **Anchor quick swap** — a key that toggles between the anchored slot and the last *other*
-  slot you used. Anchor 2, then work on 3 and 4, and this swaps between 2 and 4. With no
-  anchor set it falls back to the plain quick swap, so one key covers both situations.
-- **Anchor swap** — the strict version: always jumps to the anchor and always comes back to
-  wherever you were, and does nothing at all when no anchor is set.
+- **Anchor swap** — an optional second key that only ever works against the anchor, and does
+  nothing when none is set. The quick swap key already covers this, so you only need one.
 
 ## Keys
 
@@ -21,13 +19,12 @@ then the mod loads and does nothing, and says so in the log.
 
 | Action | What it does |
 | --- | --- |
-| Quick swap key | Toggle the last two slots used. Ignores the anchor. |
-| Anchor quick swap key | Toggle the anchor against the last other slot; plain quick swap when no anchor. |
-| Anchor swap key | Jump to the anchor and back. Does nothing without an anchor. |
+| Quick swap key | Anchor ↔ last other slot when anchored; last two slots when not. |
 | Set anchor bind | Anchor the hovered top-row slot (inventory open). Middle mouse is a good choice. |
+| Anchor swap key | Optional. Anchor-only version of quick swap; dead without an anchor. |
 
-You do not need all four. Binding just **Anchor quick swap key** and **Set anchor bind**
-gives you the whole feature on two keys.
+Those first two are the whole mod. Bind the third only if you want the anchor on a separate
+key from your everyday swap.
 
 ## Requirements
 
@@ -44,13 +41,13 @@ Press `F1` in game and pick **Quick Swap**, or edit
 | Section | Setting | Default | What it does |
 | --- | --- | --- | --- |
 | General | Enabled | `true` | Master switch for every hotkey. |
-| Keys | Quick swap key | unbound | Toggles between the last two slots used. |
-| Keys | Anchor quick swap key | unbound | Toggles the anchor against the last other slot. |
-| Keys | Anchor swap key | unbound | Jumps to the anchored slot and back. |
+| Keys | Quick swap key | unbound | Anchor ↔ last other slot, or last two slots when nothing is anchored. |
+| Keys | Anchor swap key | unbound | Optional anchor-only version of the above. |
 | Keys | Set anchor bind | unbound | Held over a hotbar slot with the inventory open, anchors it. |
 | Anchor | Anchored slot | `0` | `0` = none. Normally set with the set anchor bind in game. |
 | Anchor | Show marker on hotbar | `true` | Draws the coloured bar under the anchored slot. |
 | Anchor | Marker colour | `#FFD24AF2` | `#RRGGBB` or `#RRGGBBAA`. |
+| Behaviour | Anchor takes over quick swap | `true` | Off makes the quick swap key always toggle the last two slots and ignore the anchor. |
 | Behaviour | Only remember equipment | `true` | Eating or drinking won't overwrite your swap history. |
 | Behaviour | Show HUD messages | `true` | Brief top-left message when the anchor changes. |
 
@@ -121,6 +118,10 @@ Two details are easy to get wrong and worth naming:
   no other key on the keyboard is held, which is right for a settings-menu chord but wrong for
   a gameplay bind — holding `W` to run would silently kill a bare `Q` shortcut.
   `Shortcuts.Triggered` checks only the keys the shortcut actually names.
+- **An empty history plus an anchor used to be a dead end.** The first press jumped to the
+  anchor with nothing recorded behind it, so the next press had nowhere to go and the key
+  looked broken. That is not an exotic state — it is every fresh login, and every hot reload,
+  because the history is static. The swap now seeds itself from whatever is equipped.
 - **Nothing is bound by default,** so a silent mod is the expected first-run state rather
   than a fault. The load line in `LogOutput.log` prints every bind and warns when all four
   are empty, which is the difference between "not configured" and "broken".
