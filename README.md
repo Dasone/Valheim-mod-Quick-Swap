@@ -45,7 +45,7 @@ Binds - quick swap: Q | anchor swap: unbound | set anchor: Mouse2 | anchor handl
 ## Configuration
 
 Press `F1` in game and pick **Quick Swap**, or edit
-`BepInEx/config/samuel.haggren.quickswap.cfg` directly.
+`BepInEx/config/dev.samspel.quickswap.cfg` directly.
 
 | Section | Setting | Default | What it does |
 | --- | --- | --- | --- |
@@ -64,7 +64,7 @@ free key works.
 
 Defaults only apply to settings that are not already in the config file, so a config written
 by an earlier version keeps whatever keys it has. Clear them under `F1`, or delete
-`samuel.haggren.quickswap.cfg` with the game closed to start from the unbound defaults.
+`dev.samspel.quickswap.cfg` with the game closed to start from the unbound defaults.
 
 ## Building
 

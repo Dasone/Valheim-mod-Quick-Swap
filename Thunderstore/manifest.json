@@ -1,0 +1,10 @@
+{
+  "name": "QuickSwap",
+  "version_number": "1.0.0",
+  "author": "Dasone",
+  "website_url": "",
+  "description": "Toggle between the last two hotbar slots you used, or between an anchored slot and whatever you last had out. Anchor a slot by middle-clicking it in your inventory.",
+  "dependencies": [
+    "denikson-BepInExPack_Valheim-5.4.2333"
+  ]
+}

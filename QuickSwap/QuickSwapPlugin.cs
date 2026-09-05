@@ -10,13 +10,13 @@ namespace QuickSwap
     /// Quick Swap — toggle between the last two hotbar slots you used, plus an
     /// anchored slot you can bounce off from wherever you happen to be.
     /// </summary>
-    [BepInPlugin(Guid, Name, Version)]
+    [BepInPlugin(ModGuid, ModName, ModVersion)]
     [BepInProcess("valheim.exe")]
     public class QuickSwapPlugin : BaseUnityPlugin
     {
-        public const string Guid = "samuel.haggren.quickswap";
-        public const string Name = "Quick Swap";
-        public const string Version = "1.0.0";
+        public const string ModGuid = "dev.samspel.quickswap";
+        public const string ModName = "Quick Swap";
+        public const string ModVersion = "1.0.0";
 
         internal static ManualLogSource Log;
 
@@ -29,10 +29,10 @@ namespace QuickSwap
 
             ModConfig.Init(Config);
 
-            _harmony = new Harmony(Guid);
+            _harmony = new Harmony(ModGuid);
             _harmony.PatchAll(typeof(QuickSwapPlugin).Assembly);
 
-            Log.LogInfo(Name + " " + Version + " loaded (" + BuildInfo.Configuration + " build, " + BuildInfo.BuildTime + ").");
+            Log.LogInfo(ModName + " " + ModVersion + " loaded (" + BuildInfo.Configuration + " build, " + BuildInfo.BuildTime + ").");
             LogBindings();
         }
 
@@ -50,7 +50,7 @@ namespace QuickSwap
             // change is already on disk — and saving during a hot reload would write this
             // instance's now-stale values back over whatever the file has since become.
 
-            Log.LogInfo(Name + " unloaded.");
+            Log.LogInfo(ModName + " unloaded.");
         }
 
         private void Update()

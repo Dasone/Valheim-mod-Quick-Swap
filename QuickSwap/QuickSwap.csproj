@@ -8,7 +8,8 @@
     <Product>Quick Swap</Product>
     <Description>Toggle between your last two used Valheim hotbar slots, plus an anchored slot.</Description>
     <Version>1.0.0</Version>
-    <Company>Samuel Haggren</Company>
+    <Authors>Dasone</Authors>
+    <Company>Dasone</Company>
     <LangVersion>latest</LangVersion>
 
     <!-- Mono reads portable PDBs; this gives real line numbers in BepInEx stack traces. -->
