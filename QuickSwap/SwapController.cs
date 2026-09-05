@@ -37,6 +37,23 @@ namespace QuickSwap
         }
 
         /// <summary>
+        /// The anchor-aware swap. With an anchor set this toggles between the anchored slot
+        /// and the last other slot you used - anchor 2, work on 3 then 4, and this swaps
+        /// 2 and 4. With no anchor set it degrades to the plain <see cref="QuickSwap"/>,
+        /// so a single key covers both situations.
+        /// </summary>
+        internal static void AnchorQuickSwap()
+        {
+            if (ModConfig.AnchorSlot.Value <= 0)
+            {
+                QuickSwap();
+                return;
+            }
+
+            AnchorSwap();
+        }
+
+        /// <summary>
         /// Jump to the anchored slot, or — if already on it — back to wherever you came from.
         /// Because <see cref="Record"/> runs on the way in, "where you came from" is just
         /// <see cref="Previous"/>, which is what makes 3 -> anchor -> 3, 4 -> anchor -> 4 work.
@@ -46,7 +63,7 @@ namespace QuickSwap
             int anchor = ModConfig.AnchorSlot.Value;
             if (anchor <= 0)
             {
-                Notifier.Show("Quick Swap: no anchored slot. Middle-click a hotbar slot in your inventory.");
+                Notifier.Show("Quick Swap: no anchored slot. Use the set anchor bind on a hotbar slot in your inventory.");
                 return;
             }
 

@@ -3,24 +3,31 @@
 A Valheim BepInEx mod for bouncing between hotbar slots without reaching for the number row.
 
 - **Quick swap** — one key toggles between the last two hotbar slots you used. On slot 1,
-  press 2, then tap the swap key to go back to 1, tap again for 2, and so on.
-- **Anchored slot** — pin one slot (your pickaxe, your bow, your food) and give it its own key.
-  That key always jumps to the anchor and always comes back to wherever you were:
-  on 3 → anchor → 3; on 4 → anchor → 4.
-- **Set the anchor in-game** — open the inventory and middle-click any top-row hotbar slot.
-  Middle-click the anchored slot again to clear it. A small coloured bar marks the anchored
+  press 2, then tap the key to go back to 1, tap again for 2, and so on.
+- **Anchored slot** — pin one slot (your pickaxe, your bow, your food). Set it in game by
+  hovering a top-row hotbar slot in the open inventory and pressing the set anchor bind;
+  press it on the anchored slot again to clear it. A small coloured bar marks the anchored
   slot on the on-screen hotbar.
+- **Anchor quick swap** — a key that toggles between the anchored slot and the last *other*
+  slot you used. Anchor 2, then work on 3 and 4, and this swaps between 2 and 4. With no
+  anchor set it falls back to the plain quick swap, so one key covers both situations.
+- **Anchor swap** — the strict version: always jumps to the anchor and always comes back to
+  wherever you were, and does nothing at all when no anchor is set.
 
-## Defaults
+## Keys
 
-| Action | Default key |
+**Nothing is bound out of the box.** Pick what you want under `F1` → **Quick Swap**; until
+then the mod loads and does nothing, and says so in the log.
+
+| Action | What it does |
 | --- | --- |
-| Quick swap (last two slots) | `Q` |
-| Jump to / from anchored slot | `9` |
-| Set or clear the anchor (inventory open, hovering a slot) | Middle mouse button |
-| Open the settings window | `F1` (ConfigurationManager) |
+| Quick swap key | Toggle the last two slots used. Ignores the anchor. |
+| Anchor quick swap key | Toggle the anchor against the last other slot; plain quick swap when no anchor. |
+| Anchor swap key | Jump to the anchor and back. Does nothing without an anchor. |
+| Set anchor bind | Anchor the hovered top-row slot (inventory open). Middle mouse is a good choice. |
 
-All of these are configurable — see **Configuration** below.
+You do not need all four. Binding just **Anchor quick swap key** and **Set anchor bind**
+gives you the whole feature on two keys.
 
 ## Requirements
 
@@ -36,17 +43,23 @@ Press `F1` in game and pick **Quick Swap**, or edit
 
 | Section | Setting | Default | What it does |
 | --- | --- | --- | --- |
-| General | Enabled | `true` | Master switch for both hotkeys. |
-| Keys | Quick swap key | `Q` | Toggles between the last two slots used. |
-| Keys | Anchor swap key | `9` | Jumps to the anchored slot and back. |
-| Keys | Set anchor bind | `Mouse2` | Held over a hotbar slot with the inventory open, anchors it. |
-| Anchor | Anchored slot | `0` | `0` = none. Normally set by middle-clicking in game. |
+| General | Enabled | `true` | Master switch for every hotkey. |
+| Keys | Quick swap key | unbound | Toggles between the last two slots used. |
+| Keys | Anchor quick swap key | unbound | Toggles the anchor against the last other slot. |
+| Keys | Anchor swap key | unbound | Jumps to the anchored slot and back. |
+| Keys | Set anchor bind | unbound | Held over a hotbar slot with the inventory open, anchors it. |
+| Anchor | Anchored slot | `0` | `0` = none. Normally set with the set anchor bind in game. |
 | Anchor | Show marker on hotbar | `true` | Draws the coloured bar under the anchored slot. |
 | Anchor | Marker colour | `#FFD24AF2` | `#RRGGBB` or `#RRGGBBAA`. |
 | Behaviour | Only remember equipment | `true` | Eating or drinking won't overwrite your swap history. |
 | Behaviour | Show HUD messages | `true` | Brief top-left message when the anchor changes. |
 
-`Q` is unbound in vanilla Valheim, but if another mod claims it, rebind here.
+`Q` is unbound in vanilla Valheim and is a natural choice for one of the swap keys, but any
+free key works.
+
+Defaults only apply to settings that are not already in the config file, so a config written
+by an earlier version keeps whatever keys it has. Clear them under `F1`, or delete
+`samuel.haggren.quickswap.cfg` with the game closed to start from the unbound defaults.
 
 ## Building
 
@@ -108,6 +121,9 @@ Two details are easy to get wrong and worth naming:
   no other key on the keyboard is held, which is right for a settings-menu chord but wrong for
   a gameplay bind — holding `W` to run would silently kill a bare `Q` shortcut.
   `Shortcuts.Triggered` checks only the keys the shortcut actually names.
+- **Nothing is bound by default,** so a silent mod is the expected first-run state rather
+  than a fault. The load line in `LogOutput.log` prints every bind and warns when all four
+  are empty, which is the difference between "not configured" and "broken".
 - **Whether a hotkey may fire is `Player.TakeInput`'s call, not ours.** That is the game's own
   gate on walking, attacking and the vanilla hotbar keys, so chat, the inventory, the map,
   menus, text viewers, death, cutscenes and teleporting are all covered for free — and stay

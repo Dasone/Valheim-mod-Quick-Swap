@@ -12,6 +12,7 @@ namespace QuickSwap
         internal static ConfigEntry<bool> Enabled;
 
         internal static ConfigEntry<KeyboardShortcut> QuickSwapKey;
+        internal static ConfigEntry<KeyboardShortcut> AnchorQuickSwapKey;
         internal static ConfigEntry<KeyboardShortcut> AnchorSwapKey;
         internal static ConfigEntry<KeyboardShortcut> SetAnchorBind;
 
@@ -33,23 +34,28 @@ namespace QuickSwap
                     null, new ConfigurationManagerAttributes { Order = 100 }));
 
             QuickSwapKey = config.Bind(
-                "2 - Keys", "Quick swap key", new KeyboardShortcut(KeyCode.Q),
-                new ConfigDescription("Toggles between the last two hotbar slots you used. Press once to go back, press again to return.",
+                "2 - Keys", "Quick swap key", KeyboardShortcut.Empty,
+                new ConfigDescription("Toggles between the last two hotbar slots you used. Press once to go back, press again to return. Ignores the anchor entirely.",
                     null, new ConfigurationManagerAttributes { Order = 90 }));
 
+            AnchorQuickSwapKey = config.Bind(
+                "2 - Keys", "Anchor quick swap key", KeyboardShortcut.Empty,
+                new ConfigDescription("Toggles between the anchored slot and the last other slot you used: anchor 2, then work on 3 and 4, and this swaps 2 and 4. With no anchor set it falls back to the plain quick swap.",
+                    null, new ConfigurationManagerAttributes { Order = 85 }));
+
             AnchorSwapKey = config.Bind(
-                "2 - Keys", "Anchor swap key", new KeyboardShortcut(KeyCode.Alpha9),
-                new ConfigDescription("Jumps to the anchored slot. Press again to go back to the slot you came from.",
+                "2 - Keys", "Anchor swap key", KeyboardShortcut.Empty,
+                new ConfigDescription("Jumps to the anchored slot. Press again to go back to the slot you came from. Unlike the anchor quick swap, this does nothing when no anchor is set.",
                     null, new ConfigurationManagerAttributes { Order = 80 }));
 
             SetAnchorBind = config.Bind(
-                "2 - Keys", "Set anchor bind", new KeyboardShortcut(KeyCode.Mouse2),
-                new ConfigDescription("Press this while hovering a top-row hotbar slot in the open inventory to anchor it. Press it on the anchored slot again to clear the anchor. Default is middle mouse button.",
+                "2 - Keys", "Set anchor bind", KeyboardShortcut.Empty,
+                new ConfigDescription("Press this while hovering a top-row hotbar slot in the open inventory to anchor it. Press it on the anchored slot again to clear the anchor. Middle mouse button is a good choice.",
                     null, new ConfigurationManagerAttributes { Order = 70 }));
 
             AnchorSlot = config.Bind(
                 "3 - Anchor", "Anchored slot", 0,
-                new ConfigDescription("Hotbar slot the anchor key jumps to. 0 means no anchor set. Usually set in-game by middle-clicking a hotbar slot.",
+                new ConfigDescription("Hotbar slot the anchor keys use. 0 means no anchor set. Usually set in-game with the set anchor bind rather than here.",
                     new AcceptableValueRange<int>(0, 8), new ConfigurationManagerAttributes { Order = 60 }));
 
             ShowAnchorMarker = config.Bind(

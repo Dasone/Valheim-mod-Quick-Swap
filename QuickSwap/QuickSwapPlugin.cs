@@ -1,4 +1,5 @@
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using UnityEngine;
@@ -32,6 +33,7 @@ namespace QuickSwap
             _harmony.PatchAll(typeof(QuickSwapPlugin).Assembly);
 
             Log.LogInfo(Name + " " + Version + " loaded (" + BuildInfo.Configuration + " build, " + BuildInfo.BuildTime + ").");
+            LogBindings();
         }
 
         /// <summary>
@@ -43,7 +45,10 @@ namespace QuickSwap
         {
             AnchorMarker.RemoveAll();
             _harmony?.UnpatchSelf();
-            Config?.Save();
+
+            // Deliberately no Config.Save() here. SaveOnConfigSet is on by default, so every
+            // change is already on disk — and saving during a hot reload would write this
+            // instance's now-stale values back over whatever the file has since become.
 
             Log.LogInfo(Name + " unloaded.");
         }
@@ -83,10 +88,42 @@ namespace QuickSwap
             {
                 SwapController.QuickSwap();
             }
+            else if (ModConfig.AnchorQuickSwapKey.Value.Triggered())
+            {
+                SwapController.AnchorQuickSwap();
+            }
             else if (ModConfig.AnchorSwapKey.Value.Triggered())
             {
                 SwapController.AnchorSwap();
             }
+        }
+
+        /// <summary>
+        /// Nothing is bound out of the box, so the log has to say so — otherwise a mod that
+        /// loads fine and then does nothing looks broken rather than merely unconfigured.
+        /// </summary>
+        private static void LogBindings()
+        {
+            Log.LogInfo("Binds - quick swap: " + Describe(ModConfig.QuickSwapKey.Value)
+                        + " | anchor quick swap: " + Describe(ModConfig.AnchorQuickSwapKey.Value)
+                        + " | anchor swap: " + Describe(ModConfig.AnchorSwapKey.Value)
+                        + " | set anchor: " + Describe(ModConfig.SetAnchorBind.Value));
+
+            if (IsUnbound(ModConfig.QuickSwapKey) && IsUnbound(ModConfig.AnchorQuickSwapKey)
+                && IsUnbound(ModConfig.AnchorSwapKey) && IsUnbound(ModConfig.SetAnchorBind))
+            {
+                Log.LogWarning("No keys are bound, so nothing will happen yet. Bind them under F1 -> Quick Swap.");
+            }
+        }
+
+        private static bool IsUnbound(ConfigEntry<KeyboardShortcut> entry)
+        {
+            return entry.Value.MainKey == KeyCode.None;
+        }
+
+        private static string Describe(KeyboardShortcut shortcut)
+        {
+            return shortcut.MainKey == KeyCode.None ? "unbound" : shortcut.ToString();
         }
 
         /// <summary>Anchors (or un-anchors) the top-row inventory slot under the mouse.</summary>
