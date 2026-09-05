@@ -2,7 +2,7 @@
   "name": "QuickSwap",
   "version_number": "1.0.0",
   "author": "Dasone",
-  "website_url": "",
+  "website_url": "https://github.com/Dasone/Valheim-mod-Quick-Swap",
   "description": "Tap one key to swap between the last two hotbar slots you used, or anchor a slot and always bounce back to it. Client-side.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2333"

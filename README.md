@@ -73,5 +73,10 @@ and launch the game from there.
 - If a swap key does nothing at all, check `BepInEx/LogOutput.log` — Quick Swap prints its
   bindings on every load, including when two of them collide.
 
+## Source
+
+Code and issue tracker: [github.com/Dasone/Valheim-mod-Quick-Swap][source]
+
+[source]: https://github.com/Dasone/Valheim-mod-Quick-Swap
 [ConfigurationManager]: https://valheim.thunderstore.io/package/Azumatt/Azus_UnOfficial_ConfigManager/
 [BepInEx for Valheim]: https://valheim.thunderstore.io/package/denikson/BepInExPack_Valheim/

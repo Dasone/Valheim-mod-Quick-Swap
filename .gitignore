@@ -3,10 +3,15 @@ bin/
 obj/
 *.user
 *.suo
-.vs/
 
-# Machine-specific paths — copy Environment.props.example and edit
+# Machine-specific paths
 Environment.props
+
+# Rider / VS
+.idea/
+.vs/
+_ReSharper*/
 
 # Packaging
 dist/
+*.zip
