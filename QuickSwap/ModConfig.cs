@@ -53,13 +53,13 @@ namespace QuickSwap
                     new AcceptableValueRange<int>(0, 8), new ConfigurationManagerAttributes { Order = 60 }));
 
             ShowAnchorMarker = config.Bind(
-                "3 - Anchor", "Show marker on hotbar", true,
-                new ConfigDescription("Draw a coloured bar under the anchored slot on the on-screen hotbar.",
+                "3 - Anchor", "Show anchor marker", true,
+                new ConfigDescription("Outline the anchored slot, both on the on-screen hotbar and in the top row of the open inventory.",
                     null, new ConfigurationManagerAttributes { Order = 50 }));
 
             AnchorMarkerColor = config.Bind(
                 "3 - Anchor", "Marker colour", "#FFD24AF2",
-                new ConfigDescription("Colour of the anchor marker, as #RRGGBB or #RRGGBBAA.",
+                new ConfigDescription("Colour of the anchor outline, as #RRGGBB or #RRGGBBAA.",
                     null, new ConfigurationManagerAttributes { Order = 40 }));
 
             OnlyTrackEquipment = config.Bind(

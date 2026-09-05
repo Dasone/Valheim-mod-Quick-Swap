@@ -5,8 +5,8 @@ A Valheim BepInEx mod for bouncing between hotbar slots without reaching for the
 - **Quick swap** (`Q`) — toggles between the last two hotbar slots you used.
 - **Anchored slot** — pin one slot (your pickaxe, your bow, your food). Set it in game by
   hovering a top-row hotbar slot in the open inventory and pressing `Alt + Q`;
-  press it on the anchored slot again to clear it. A small coloured bar marks the anchored
-  slot on the on-screen hotbar.
+  press it on the anchored slot again to clear it. The anchored slot is outlined in colour
+  wherever you can see it — on the on-screen hotbar, and in the top row of the open inventory.
 - **Anchor swap** (`Alt + Q`) — swaps to the anchored slot and back, from wherever you are:
   anchor 8, select 1, and it swaps 8 and 1; select 2, and it swaps 8 and 2. Leave it unbound
   and the quick swap key takes the anchor on instead, covering both jobs on one key.
@@ -51,8 +51,8 @@ Press `F1` in game and pick **Quick Swap**, or edit
 | Keys | Anchor swap key | `Alt + Q` | Optional. Binding it takes the anchor off the quick swap key. |
 | Keys | Set anchor bind | `Alt + Q` | Held over a hotbar slot with the inventory open, anchors it. |
 | Anchor | Anchored slot | `0` | `0` = none. Normally set with the set anchor bind in game. |
-| Anchor | Show marker on hotbar | `true` | Draws the coloured bar under the anchored slot. |
-| Anchor | Marker colour | `#FFD24AF2` | `#RRGGBB` or `#RRGGBBAA`. |
+| Anchor | Show anchor marker | `true` | Outlines the anchored slot on the hotbar and in the inventory. |
+| Anchor | Marker colour | `#FFD24AF2` | Outline colour, `#RRGGBB` or `#RRGGBBAA`. |
 | Behaviour | Only remember equipment | `true` | Eating or drinking won't overwrite your swap history. |
 | Behaviour | Show HUD messages | `true` | Brief top-left message when the anchor changes. |
 
@@ -148,11 +148,12 @@ QuickSwap/
   QuickSwapPlugin.cs                 plugin entry, Update loop, anchor-on-middle-click
   SwapController.cs                  slot history and the two swap actions
   ModConfig.cs                       every setting
-  AnchorMarker.cs                    the coloured bar on the hotbar
+  AnchorMarker.cs                    the outline on the hotbar and in the inventory
   GameGuards.cs                      when hotkeys are allowed to fire
   Shortcuts.cs                       keybind check that survives held movement keys
   Notifier.cs                        HUD messages
   ConfigurationManagerAttributes.cs  metadata for the F1 window
   Patches/PlayerPatches.cs           records hotbar usage
-  Patches/HotkeyBarPatches.cs        repaints the anchor marker
+  Patches/HotkeyBarPatches.cs        repaints the anchor marker on the hotbar
+  Patches/InventoryGridPatches.cs    repaints the anchor marker in the inventory
 ```
