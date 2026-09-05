@@ -31,9 +31,10 @@ namespace QuickSwap
         }
 
         /// <summary>
-        /// The main swap. With a slot anchored it toggles between the anchor and the last
-        /// other slot you used — anchor 8, select 1, and it swaps 8 and 1; select 2, and it
-        /// swaps 8 and 2. With nothing anchored it toggles the last two slots used.
+        /// The main swap. Toggles the last two slots used — and, while no key is bound
+        /// specifically for the anchor, it takes the anchor on too: anchor 8, select 1, and
+        /// it swaps 8 and 1; select 2, and it swaps 8 and 2. Bind an anchor swap key and
+        /// this one drops the anchor and goes back to plain last-two-slots swapping.
         /// </summary>
         internal static void QuickSwap()
         {
@@ -46,7 +47,7 @@ namespace QuickSwap
             SeedFromEquipped(player);
 
             int anchor = ModConfig.AnchorSlot.Value;
-            if (anchor > 0 && ModConfig.AnchorTakesPriority.Value)
+            if (anchor > 0 && !ModConfig.HasDedicatedAnchorKey())
             {
                 SwapAgainst(anchor);
                 return;
@@ -56,9 +57,9 @@ namespace QuickSwap
         }
 
         /// <summary>
-        /// The anchor-only swap. Same toggle as <see cref="QuickSwap"/> when an anchor is
-        /// set, but never falls back to the last-two-slots behaviour, so a key bound to
-        /// this stays reserved for the anchor.
+        /// The anchor-only swap. Never falls back to the last-two-slots behaviour, so a key
+        /// bound to this stays reserved for the anchor — and binding one is what tells
+        /// <see cref="QuickSwap"/> to stop handling the anchor itself.
         /// </summary>
         internal static void AnchorSwap()
         {

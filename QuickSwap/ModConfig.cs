@@ -19,7 +19,6 @@ namespace QuickSwap
         internal static ConfigEntry<bool> ShowAnchorMarker;
         internal static ConfigEntry<string> AnchorMarkerColor;
 
-        internal static ConfigEntry<bool> AnchorTakesPriority;
         internal static ConfigEntry<bool> OnlyTrackEquipment;
         internal static ConfigEntry<bool> ShowMessages;
 
@@ -35,12 +34,12 @@ namespace QuickSwap
 
             QuickSwapKey = config.Bind(
                 "2 - Keys", "Quick swap key", KeyboardShortcut.Empty,
-                new ConfigDescription("Your main swap key. With a slot anchored it toggles between the anchor and the last other slot you used; with nothing anchored it toggles between the last two slots you used.",
+                new ConfigDescription("Your main swap key. Toggles between the last two hotbar slots you used - and, unless you give the anchor its own key below, between the anchor and the last other slot whenever a slot is anchored.",
                     null, new ConfigurationManagerAttributes { Order = 90 }));
 
             AnchorSwapKey = config.Bind(
                 "2 - Keys", "Anchor swap key", KeyboardShortcut.Empty,
-                new ConfigDescription("Optional second key that only ever works against the anchor: jumps to the anchored slot, press again to come back. Does nothing when no anchor is set. The quick swap key already does this, so you only need one of the two.",
+                new ConfigDescription("Optional. Leave this unbound and the quick swap key handles the anchor for you. Bind it and it takes the anchor over completely: this key swaps the anchor, and the quick swap key goes back to plain last-two-slots swapping and ignores the anchor.",
                     null, new ConfigurationManagerAttributes { Order = 80 }));
 
             SetAnchorBind = config.Bind(
@@ -63,11 +62,6 @@ namespace QuickSwap
                 new ConfigDescription("Colour of the anchor marker, as #RRGGBB or #RRGGBBAA.",
                     null, new ConfigurationManagerAttributes { Order = 40 }));
 
-            AnchorTakesPriority = config.Bind(
-                "4 - Behaviour", "Anchor takes over quick swap", true,
-                new ConfigDescription("When a slot is anchored, the quick swap key swaps between the anchor and the last other slot you used. Turn this off to make the quick swap key always toggle the last two slots and ignore the anchor.",
-                    null, new ConfigurationManagerAttributes { Order = 35 }));
-
             OnlyTrackEquipment = config.Bind(
                 "4 - Behaviour", "Only remember equipment", true,
                 new ConfigDescription("When on, using a consumable (food, mead, arrows) does not overwrite your swap history, so the swap key keeps toggling between your actual tools and weapons.",
@@ -77,6 +71,24 @@ namespace QuickSwap
                 "4 - Behaviour", "Show HUD messages", true,
                 new ConfigDescription("Show a short message in the top-left corner when the anchored slot changes.",
                     null, new ConfigurationManagerAttributes { Order = 20 }));
+        }
+
+        /// <summary>
+        /// Whether a key is bound purely for the anchor. When one is, the quick swap key
+        /// hands the anchor over to it; when none is, the quick swap key covers both jobs.
+        /// The binding is the setting here — there is no separate switch to disagree with it.
+        /// </summary>
+        internal static bool HasDedicatedAnchorKey()
+        {
+            KeyboardShortcut anchorKey = AnchorSwapKey.Value;
+            if (anchorKey.MainKey == KeyCode.None)
+            {
+                return false;
+            }
+
+            // Bound to the same combination as the quick swap key, only one of the two can
+            // ever fire, so it is taking nothing over and the quick swap key keeps the anchor.
+            return !anchorKey.Equals(QuickSwapKey.Value);
         }
 
         /// <summary>Parsed <see cref="AnchorMarkerColor"/>, falling back to amber on a malformed value.</summary>

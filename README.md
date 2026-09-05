@@ -2,15 +2,16 @@
 
 A Valheim BepInEx mod for bouncing between hotbar slots without reaching for the number row.
 
-- **Quick swap** — your main key. With a slot anchored it toggles between the anchor and
-  the last *other* slot you used: anchor 8, select 1, and it swaps 8 and 1; select 2, and it
-  swaps 8 and 2. With nothing anchored it toggles between the last two slots you used.
+- **Quick swap** — your main key. Toggles between the last two hotbar slots you used, and
+  takes the anchor on too: anchor 8, select 1, and it swaps 8 and 1; select 2, and it swaps
+  8 and 2.
 - **Anchored slot** — pin one slot (your pickaxe, your bow, your food). Set it in game by
   hovering a top-row hotbar slot in the open inventory and pressing the set anchor bind;
   press it on the anchored slot again to clear it. A small coloured bar marks the anchored
   slot on the on-screen hotbar.
-- **Anchor swap** — an optional second key that only ever works against the anchor, and does
-  nothing when none is set. The quick swap key already covers this, so you only need one.
+- **Anchor swap** — optional. Leave it unbound and quick swap handles the anchor, as above.
+  Bind it and it takes the anchor over completely: this key swaps the anchor, and quick swap
+  goes back to plain last-two-slots and ignores the anchor entirely.
 
 ## Keys
 
@@ -19,12 +20,20 @@ then the mod loads and does nothing, and says so in the log.
 
 | Action | What it does |
 | --- | --- |
-| Quick swap key | Anchor ↔ last other slot when anchored; last two slots when not. |
+| Quick swap key | Last two slots used — plus the anchor, while no anchor swap key is bound. |
 | Set anchor bind | Anchor the hovered top-row slot (inventory open). Middle mouse is a good choice. |
-| Anchor swap key | Optional. Anchor-only version of quick swap; dead without an anchor. |
+| Anchor swap key | Optional. Binding it moves the anchor onto this key and off quick swap. |
 
-Those first two are the whole mod. Bind the third only if you want the anchor on a separate
-key from your everyday swap.
+Those first two are the whole mod on one swap key. Bind the third only if you want the
+anchor and your everyday swap on separate keys.
+
+There is no setting for which key owns the anchor — the binding *is* the setting. Bound
+means the anchor lives there; unbound means quick swap picks it up. The load line in the log
+says which is in effect:
+
+```
+Binds - quick swap: Q | anchor swap: unbound | set anchor: Mouse2 | anchor handled by the quick swap key
+```
 
 ## Requirements
 
@@ -41,13 +50,12 @@ Press `F1` in game and pick **Quick Swap**, or edit
 | Section | Setting | Default | What it does |
 | --- | --- | --- | --- |
 | General | Enabled | `true` | Master switch for every hotkey. |
-| Keys | Quick swap key | unbound | Anchor ↔ last other slot, or last two slots when nothing is anchored. |
-| Keys | Anchor swap key | unbound | Optional anchor-only version of the above. |
+| Keys | Quick swap key | unbound | Last two slots used, plus the anchor while no anchor swap key is bound. |
+| Keys | Anchor swap key | unbound | Optional. Binding it takes the anchor off the quick swap key. |
 | Keys | Set anchor bind | unbound | Held over a hotbar slot with the inventory open, anchors it. |
 | Anchor | Anchored slot | `0` | `0` = none. Normally set with the set anchor bind in game. |
 | Anchor | Show marker on hotbar | `true` | Draws the coloured bar under the anchored slot. |
 | Anchor | Marker colour | `#FFD24AF2` | `#RRGGBB` or `#RRGGBBAA`. |
-| Behaviour | Anchor takes over quick swap | `true` | Off makes the quick swap key always toggle the last two slots and ignore the anchor. |
 | Behaviour | Only remember equipment | `true` | Eating or drinking won't overwrite your swap history. |
 | Behaviour | Show HUD messages | `true` | Brief top-left message when the anchor changes. |
 
@@ -118,6 +126,10 @@ Two details are easy to get wrong and worth naming:
   no other key on the keyboard is held, which is right for a settings-menu chord but wrong for
   a gameplay bind — holding `W` to run would silently kill a bare `Q` shortcut.
   `Shortcuts.Triggered` checks only the keys the shortcut actually names.
+- **Which key owns the anchor is derived, not configured.** An explicit switch alongside the
+  keybinds could contradict them, and a carried-over config on the losing side of that
+  contradiction looks exactly like the anchor being ignored at random. Binding a key for the
+  anchor is already an unambiguous statement of intent, so that is the only input.
 - **An empty history plus an anchor used to be a dead end.** The first press jumped to the
   anchor with nothing recorded behind it, so the next press had nowhere to go and the key
   looked broken. That is not an exotic state — it is every fresh login, and every hot reload,

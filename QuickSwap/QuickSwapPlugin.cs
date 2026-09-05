@@ -102,7 +102,16 @@ namespace QuickSwap
         {
             Log.LogInfo("Binds - quick swap: " + Describe(ModConfig.QuickSwapKey.Value)
                         + " | anchor swap: " + Describe(ModConfig.AnchorSwapKey.Value)
-                        + " | set anchor: " + Describe(ModConfig.SetAnchorBind.Value));
+                        + " | set anchor: " + Describe(ModConfig.SetAnchorBind.Value)
+                        + " | anchor handled by the "
+                        + (ModConfig.HasDedicatedAnchorKey() ? "anchor swap" : "quick swap") + " key");
+
+            if (!IsUnbound(ModConfig.AnchorSwapKey)
+                && ModConfig.AnchorSwapKey.Value.Equals(ModConfig.QuickSwapKey.Value))
+            {
+                Log.LogWarning("Quick swap and anchor swap are bound to the same key, so only quick swap fires. "
+                               + "Give the anchor its own key, or leave it unbound and quick swap will handle it.");
+            }
 
             if (IsUnbound(ModConfig.QuickSwapKey) && IsUnbound(ModConfig.AnchorSwapKey)
                 && IsUnbound(ModConfig.SetAnchorBind))
