@@ -84,13 +84,34 @@ namespace QuickSwap
                 return;
             }
 
-            if (ModConfig.QuickSwapKey.Value.Triggered())
-            {
-                SwapController.QuickSwap();
-            }
-            else if (ModConfig.AnchorSwapKey.Value.Triggered())
+            HandleSwapKeys();
+        }
+
+        /// <summary>
+        /// Fires whichever swap key was pressed, preferring the more specific combination.
+        /// </summary>
+        /// <remarks>
+        /// The default binds are Q and shift+Q, which share a main key, so shift+Q also
+        /// satisfies the bare Q. Testing in a fixed order would let whichever came first
+        /// swallow the other; the modifier count decides instead. A tie means both are
+        /// bound to the same combination, which <see cref="ModConfig.HasDedicatedAnchorKey"/>
+        /// already treats as "quick swap keeps the anchor", so quick swap wins it.
+        /// </remarks>
+        private static void HandleSwapKeys()
+        {
+            KeyboardShortcut quick = ModConfig.QuickSwapKey.Value;
+            KeyboardShortcut anchor = ModConfig.AnchorSwapKey.Value;
+
+            bool quickFired = quick.Triggered();
+            bool anchorFired = anchor.Triggered();
+
+            if (anchorFired && (!quickFired || anchor.ModifierCount() > quick.ModifierCount()))
             {
                 SwapController.AnchorSwap();
+            }
+            else if (quickFired)
+            {
+                SwapController.QuickSwap();
             }
         }
 

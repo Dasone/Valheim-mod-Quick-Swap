@@ -33,18 +33,18 @@ namespace QuickSwap
                     null, new ConfigurationManagerAttributes { Order = 100 }));
 
             QuickSwapKey = config.Bind(
-                "2 - Keys", "Quick swap key", KeyboardShortcut.Empty,
+                "2 - Keys", "Quick swap key", new KeyboardShortcut(KeyCode.Q),
                 new ConfigDescription("Your main swap key. Toggles between the last two hotbar slots you used - and, unless you give the anchor its own key below, between the anchor and the last other slot whenever a slot is anchored.",
                     null, new ConfigurationManagerAttributes { Order = 90 }));
 
             AnchorSwapKey = config.Bind(
-                "2 - Keys", "Anchor swap key", KeyboardShortcut.Empty,
-                new ConfigDescription("Optional. Leave this unbound and the quick swap key handles the anchor for you. Bind it and it takes the anchor over completely: this key swaps the anchor, and the quick swap key goes back to plain last-two-slots swapping and ignores the anchor.",
+                "2 - Keys", "Anchor swap key", new KeyboardShortcut(KeyCode.Q, KeyCode.LeftShift),
+                new ConfigDescription("Swaps to the anchored slot and back. Leave this unbound and the quick swap key handles the anchor instead; bind it and it takes the anchor over completely, leaving the quick swap key on plain last-two-slots swapping. Defaults to the same combination as the set anchor bind, which is not a clash: that one only does anything while the inventory is open, this one only while it is closed.",
                     null, new ConfigurationManagerAttributes { Order = 80 }));
 
             SetAnchorBind = config.Bind(
-                "2 - Keys", "Set anchor bind", KeyboardShortcut.Empty,
-                new ConfigDescription("Press this while hovering a top-row hotbar slot in the open inventory to anchor it. Press it on the anchored slot again to clear the anchor. Middle mouse button is a good choice.",
+                "2 - Keys", "Set anchor bind", new KeyboardShortcut(KeyCode.Q, KeyCode.LeftShift),
+                new ConfigDescription("Press this while hovering a top-row hotbar slot in the open inventory to anchor it. Press it on the anchored slot again to clear the anchor. Only does anything while the inventory is open, so it can safely share a combination with the anchor swap key.",
                     null, new ConfigurationManagerAttributes { Order = 70 }));
 
             AnchorSlot = config.Bind(

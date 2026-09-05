@@ -2,37 +2,35 @@
 
 A Valheim BepInEx mod for bouncing between hotbar slots without reaching for the number row.
 
-- **Quick swap** — your main key. Toggles between the last two hotbar slots you used, and
-  takes the anchor on too: anchor 8, select 1, and it swaps 8 and 1; select 2, and it swaps
-  8 and 2.
+- **Quick swap** (`Q`) — toggles between the last two hotbar slots you used.
 - **Anchored slot** — pin one slot (your pickaxe, your bow, your food). Set it in game by
-  hovering a top-row hotbar slot in the open inventory and pressing the set anchor bind;
+  hovering a top-row hotbar slot in the open inventory and pressing `Shift + Q`;
   press it on the anchored slot again to clear it. A small coloured bar marks the anchored
   slot on the on-screen hotbar.
-- **Anchor swap** — optional. Leave it unbound and quick swap handles the anchor, as above.
-  Bind it and it takes the anchor over completely: this key swaps the anchor, and quick swap
-  goes back to plain last-two-slots and ignores the anchor entirely.
+- **Anchor swap** (`Shift + Q`) — swaps to the anchored slot and back, from wherever you are:
+  anchor 8, select 1, and it swaps 8 and 1; select 2, and it swaps 8 and 2. Leave it unbound
+  and the quick swap key takes the anchor on instead, covering both jobs on one key.
 
 ## Keys
 
-**Nothing is bound out of the box.** Pick what you want under `F1` → **Quick Swap**; until
-then the mod loads and does nothing, and says so in the log.
+| Action | Default | What it does |
+| --- | --- | --- |
+| Quick swap key | `Q` | Toggle between the last two hotbar slots you used. |
+| Anchor swap key | `Shift + Q` | Swap to the anchored slot and back. |
+| Set anchor bind | `Shift + Q` | With the inventory open, anchor the hotbar slot under the cursor. |
 
-| Action | What it does |
-| --- | --- |
-| Quick swap key | Last two slots used — plus the anchor, while no anchor swap key is bound. |
-| Set anchor bind | Anchor the hovered top-row slot (inventory open). Middle mouse is a good choice. |
-| Anchor swap key | Optional. Binding it moves the anchor onto this key and off quick swap. |
+`Shift + Q` doing two jobs is not a clash: setting the anchor only happens while the
+inventory is open, swapping only while it is closed. One combination, one anchor concept.
 
-Those first two are the whole mod on one swap key. Bind the third only if you want the
-anchor and your everyday swap on separate keys.
+Shift is also sprint in Valheim, so a `Shift + Q` swap while moving will make you sprint for
+that moment. Rebind under `F1` → **Quick Swap** if that bothers you.
 
-There is no setting for which key owns the anchor — the binding *is* the setting. Bound
-means the anchor lives there; unbound means quick swap picks it up. The load line in the log
-says which is in effect:
+Leaving **Anchor swap key** unbound hands the anchor back to the quick swap key, which then
+covers both jobs on `Q` alone. There is no setting for that — the binding *is* the setting,
+and the load line in the log says which way it resolved:
 
 ```
-Binds - quick swap: Q | anchor swap: unbound | set anchor: Mouse2 | anchor handled by the quick swap key
+Binds - quick swap: Q | anchor swap: Q + LeftShift | set anchor: Q + LeftShift | anchor handled by the anchor swap key
 ```
 
 ## Requirements
@@ -50,21 +48,20 @@ Press `F1` in game and pick **Quick Swap**, or edit
 | Section | Setting | Default | What it does |
 | --- | --- | --- | --- |
 | General | Enabled | `true` | Master switch for every hotkey. |
-| Keys | Quick swap key | unbound | Last two slots used, plus the anchor while no anchor swap key is bound. |
-| Keys | Anchor swap key | unbound | Optional. Binding it takes the anchor off the quick swap key. |
-| Keys | Set anchor bind | unbound | Held over a hotbar slot with the inventory open, anchors it. |
+| Keys | Quick swap key | `Q` | Last two slots used, plus the anchor while no anchor swap key is bound. |
+| Keys | Anchor swap key | `Shift + Q` | Optional. Binding it takes the anchor off the quick swap key. |
+| Keys | Set anchor bind | `Shift + Q` | Held over a hotbar slot with the inventory open, anchors it. |
 | Anchor | Anchored slot | `0` | `0` = none. Normally set with the set anchor bind in game. |
 | Anchor | Show marker on hotbar | `true` | Draws the coloured bar under the anchored slot. |
 | Anchor | Marker colour | `#FFD24AF2` | `#RRGGBB` or `#RRGGBBAA`. |
 | Behaviour | Only remember equipment | `true` | Eating or drinking won't overwrite your swap history. |
 | Behaviour | Show HUD messages | `true` | Brief top-left message when the anchor changes. |
 
-`Q` is unbound in vanilla Valheim and is a natural choice for one of the swap keys, but any
-free key works.
+`Q` is unbound in vanilla Valheim, which is why it is the default here.
 
 Defaults only apply to settings that are not already in the config file, so a config written
-by an earlier version keeps whatever keys it has. Clear them under `F1`, or delete
-`dev.samspel.quickswap.cfg` with the game closed to start from the unbound defaults.
+by an earlier version keeps whatever keys it has. Change them under `F1`, or delete
+`dev.samspel.quickswap.cfg` with the game closed to start from the stock defaults.
 
 ## Building
 
@@ -134,9 +131,12 @@ Two details are easy to get wrong and worth naming:
   anchor with nothing recorded behind it, so the next press had nowhere to go and the key
   looked broken. That is not an exotic state — it is every fresh login, and every hot reload,
   because the history is static. The swap now seeds itself from whatever is equipped.
-- **Nothing is bound by default,** so a silent mod is the expected first-run state rather
-  than a fault. The load line in `LogOutput.log` prints every bind and warns when all four
-  are empty, which is the difference between "not configured" and "broken".
+- **A bare `Q` also fires on `Shift + Q`.** That follows from checking only the keys a
+  shortcut names, which is what keeps binds alive while you hold W to run — so the two
+  default swap keys share a main key and testing them in a fixed order would let whichever
+  came first swallow the other. The one with more modifiers is tried first instead.
+- **A shortcut asking for left shift accepts right shift** (likewise control and alt).
+  Nobody binding "shift + Q" means one shift in particular.
 - **Whether a hotkey may fire is `Player.TakeInput`'s call, not ours.** That is the game's own
   gate on walking, attacking and the vanilla hotbar keys, so chat, the inventory, the map,
   menus, text viewers, death, cutscenes and teleporting are all covered for free — and stay
