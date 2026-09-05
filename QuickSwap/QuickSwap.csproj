@@ -52,6 +52,12 @@
     <Reference Include="$(BepInExCoreDir)\0Harmony.dll" Private="false" />
   </ItemGroup>
 
+  <ItemGroup Label="Art">
+    <!-- Embedded so the mod stays a single DLL with no loose asset files to deploy.
+         Regenerate with: python art/make_icon.py -->
+    <EmbeddedResource Include="Assets\anchor-arrows.png" LogicalName="QuickSwap.anchor-arrows.png" />
+  </ItemGroup>
+
   <ItemGroup>
     <None Include="..\Directory.Build.props" Link="Directory.Build.props" />
     <None Include="..\README.md" Link="README.md" />

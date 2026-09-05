@@ -44,6 +44,7 @@ namespace QuickSwap
         private void OnDestroy()
         {
             AnchorMarker.RemoveAll();
+            MarkerSprite.Unload();
             _harmony?.UnpatchSelf();
 
             // Deliberately no Config.Save() here. SaveOnConfigSet is on by default, so every

@@ -5,15 +5,27 @@ using UnityEngine.UI;
 namespace QuickSwap
 {
     /// <summary>
-    /// Outlines the anchored slot wherever it is on screen — the hotbar along the bottom,
-    /// and the top row of the inventory while it is open.
+    /// Badges the anchored slot wherever it is on screen — the hotbar along the bottom, and
+    /// the top row of the inventory while it is open.
     /// </summary>
     internal static class AnchorMarker
     {
         private const string MarkerName = "QuickSwapAnchorMarker";
 
-        /// <summary>Edge width in the element's own units; slots are roughly 64-70 across.</summary>
-        private const float Thickness = 3f;
+        /// <summary>
+        /// Badge size in the element's own units. Slots run roughly 64-70 across, so this
+        /// sits at about a third of the slot — big enough to read, small enough to leave the
+        /// item icon alone. Fixed rather than measured: the host's rect can still be zero
+        /// when we build this, and the canvas scaler handles UI scale for us either way.
+        /// </summary>
+        private const float BadgeWidth = 24f;
+
+        private const float BadgeHeight = 17f;
+
+        /// <summary>Inset from the slot's bottom-right corner.</summary>
+        private const float BadgeMargin = 1f;
+
+        private const string ArrowsName = "Arrows";
 
         /// <summary>Everything we have created, so a hot reload can take it all back off.</summary>
         private static readonly List<GameObject> Markers = new List<GameObject>();
@@ -115,12 +127,16 @@ namespace QuickSwap
                 return;
             }
 
-            foreach (Image edge in marker.GetComponentsInChildren<Image>(true))
+            Transform arrows = marker.transform.Find(ArrowsName);
+            if (arrows == null)
             {
-                if (edge.color != colour)
-                {
-                    edge.color = colour;
-                }
+                return;
+            }
+
+            Image image = arrows.GetComponent<Image>();
+            if (image != null && image.color != colour)
+            {
+                image.color = colour;
             }
         }
 
@@ -150,42 +166,46 @@ namespace QuickSwap
         }
 
         /// <summary>
-        /// Builds the outline as four thin edges rather than one filled rect, so the item
-        /// icon stays fully visible and nothing lands on top of the durability bar.
+        /// Builds the badge: a dark chip in the bottom-right corner carrying the mod's swap
+        /// arrows. It deliberately sits over the durability bar's right end — that corner is
+        /// the quietest part of a slot, and an outline round the whole slot collides with
+        /// mods that frame slots themselves.
         /// </summary>
         private static GameObject CreateMarker(GameObject host)
         {
             Markers.RemoveAll(marker => marker == null);
 
-            var frame = new GameObject(MarkerName, typeof(RectTransform));
-            var rect = (RectTransform)frame.transform;
+            var badge = new GameObject(MarkerName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            var rect = (RectTransform)badge.transform;
             rect.SetParent(host.transform, false);
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
+            rect.anchorMin = new Vector2(1f, 0f);
+            rect.anchorMax = new Vector2(1f, 0f);
+            rect.pivot = new Vector2(1f, 0f);
+            rect.sizeDelta = new Vector2(BadgeWidth, BadgeHeight);
+            rect.anchoredPosition = new Vector2(-BadgeMargin, BadgeMargin);
 
-            AddEdge(rect, new Vector2(0f, 1f), Vector2.one, new Vector2(0f, -Thickness), Vector2.zero);
-            AddEdge(rect, Vector2.zero, new Vector2(1f, 0f), Vector2.zero, new Vector2(0f, Thickness));
-            AddEdge(rect, Vector2.zero, new Vector2(0f, 1f), Vector2.zero, new Vector2(Thickness, 0f));
-            AddEdge(rect, new Vector2(1f, 0f), Vector2.one, new Vector2(-Thickness, 0f), Vector2.zero);
+            Image plate = badge.GetComponent<Image>();
+            plate.color = new Color(0f, 0f, 0f, 0.72f);
+            plate.raycastTarget = false;
+
+            var arrows = new GameObject(ArrowsName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            var arrowsRect = (RectTransform)arrows.transform;
+            arrowsRect.SetParent(rect, false);
+            arrowsRect.anchorMin = Vector2.zero;
+            arrowsRect.anchorMax = Vector2.one;
+            arrowsRect.offsetMin = new Vector2(2f, 2f);
+            arrowsRect.offsetMax = new Vector2(-2f, -2f);
+
+            Image glyph = arrows.GetComponent<Image>();
+            glyph.sprite = MarkerSprite.Get();
+            glyph.preserveAspect = true;
+            glyph.raycastTarget = false;
+            glyph.color = ModConfig.MarkerColor();
 
             rect.SetAsLastSibling();
-            Markers.Add(frame);
-            return frame;
+            Markers.Add(badge);
+            return badge;
         }
 
-        private static void AddEdge(RectTransform parent, Vector2 anchorMin, Vector2 anchorMax, Vector2 offsetMin, Vector2 offsetMax)
-        {
-            var edge = new GameObject("Edge", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-            var rect = (RectTransform)edge.transform;
-            rect.SetParent(parent, false);
-            rect.anchorMin = anchorMin;
-            rect.anchorMax = anchorMax;
-            rect.offsetMin = offsetMin;
-            rect.offsetMax = offsetMax;
-
-            edge.GetComponent<Image>().raycastTarget = false;
-        }
     }
 }

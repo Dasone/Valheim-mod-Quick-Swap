@@ -82,10 +82,18 @@ def slot(draw: ImageDraw.ImageDraw, box, label: str, anchored: bool) -> None:
         )
 
 
-def arrow(draw: ImageDraw.ImageDraw, cx: int, cy: int, length: int, pointing_right: bool) -> None:
-    shaft = 8 * SS
-    head_w = 17 * SS
-    head_h = 22 * SS
+def arrow(
+    draw: ImageDraw.ImageDraw,
+    cx: float,
+    cy: float,
+    length: float,
+    pointing_right: bool,
+    shaft: float = 8 * SS,
+    head_w: float = 17 * SS,
+    head_h: float = 22 * SS,
+    fill=None,
+) -> None:
+    fill = fill or WHITE
     half = length / 2
     tip = cx + half if pointing_right else cx - half
     back = cx - half if pointing_right else cx + half
@@ -94,11 +102,11 @@ def arrow(draw: ImageDraw.ImageDraw, cx: int, cy: int, length: int, pointing_rig
     draw.rounded_rectangle(
         [min(back, neck), cy - shaft / 2, max(back, neck), cy + shaft / 2],
         radius=shaft / 2,
-        fill=WHITE,
+        fill=fill,
     )
     draw.polygon(
         [(tip, cy), (neck, cy - head_h / 2), (neck, cy + head_h / 2)],
-        fill=WHITE,
+        fill=fill,
     )
 
 
@@ -162,8 +170,34 @@ def build() -> Image.Image:
     return image
 
 
+def build_marker(width: int = 96, height: int = 64) -> Image.Image:
+    """The in-game anchor badge: the icon's swap arrows alone, white on transparent.
+
+    White so the Image component can tint it to whatever the marker colour is set to;
+    transparent so the badge's backing plate shows through around it.
+    """
+    w, h = width * SS, height * SS
+    glyph = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(glyph)
+
+    length = w * 0.80
+    gap = h * 0.25
+    for cy, right in ((h / 2 - gap, True), (h / 2 + gap, False)):
+        arrow(draw, w / 2, cy, length, right,
+              shaft=h * 0.20, head_w=w * 0.28, head_h=h * 0.46, fill=WHITE)
+
+    return glyph.resize((width, height), Image.LANCZOS)
+
+
 if __name__ == "__main__":
-    out = Path(__file__).resolve().parent.parent / "Thunderstore" / "icon.png"
-    out.parent.mkdir(parents=True, exist_ok=True)
-    build().save(out)
-    print(f"wrote {out}")
+    root = Path(__file__).resolve().parent.parent
+
+    icon = root / "Thunderstore" / "icon.png"
+    icon.parent.mkdir(parents=True, exist_ok=True)
+    build().save(icon)
+    print(f"wrote {icon}")
+
+    marker = root / "QuickSwap" / "Assets" / "anchor-arrows.png"
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    build_marker().save(marker)
+    print(f"wrote {marker}")
