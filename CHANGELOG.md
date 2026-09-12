@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.1
+
+- **Updated for Valheim 1.0.** The previous release throws as soon as you open your
+  inventory, because Valheim 1.0 moved the inventory slot type. This release requires
+  Valheim 1.0 or newer, and will not work on older versions.
+- Requires BepInExPack Valheim 5.4.2350 or newer.
+- Fixed the swap key firing twice per press when two copies of the mod were loaded at once
+  — an install from Thunderstore alongside a hot-reload build in `BepInEx/scripts/`, which
+  neither BepInEx's nor ScriptEngine's duplicate check catches. Only the newest copy now
+  runs; the older one shuts itself down and says so in the log.
+
 ## 1.0.0
 
 Initial release.

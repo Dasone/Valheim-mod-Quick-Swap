@@ -15,20 +15,33 @@ namespace QuickSwap
     {
         public const string ModGuid = "dev.samspel.quickswap";
         public const string ModName = "Quick Swap";
-        public const string ModVersion = "1.0.0";
+        public const string ModVersion = "1.0.1";
 
         internal static ManualLogSource Log;
 
         private Harmony _harmony;
         private Player _lastLocalPlayer;
+        private bool _running;
 
         private void Awake()
         {
             Log = Logger;
 
+            if (!SingleInstance.Claim(this))
+            {
+                enabled = false;
+                return;
+            }
+
+            _running = true;
+
             ModConfig.Init(Config);
 
-            _harmony = new Harmony(ModGuid);
+            // The Harmony ID is per instance, not per mod. An older copy standing down for
+            // this one calls UnpatchSelf from its OnDestroy, which Unity runs at the end of
+            // the frame — after the PatchAll below. A shared ID would let the copy on its
+            // way out take these patches with it.
+            _harmony = new Harmony(ModGuid + "." + GetInstanceID());
             _harmony.PatchAll(typeof(QuickSwapPlugin).Assembly);
 
             Log.LogInfo(ModName + " " + ModVersion + " loaded (" + BuildInfo.Configuration + " build, " + BuildInfo.BuildTime + ").");
@@ -42,6 +55,13 @@ namespace QuickSwap
         /// </summary>
         private void OnDestroy()
         {
+            if (!_running)
+            {
+                // Stood down in Awake for a newer copy: nothing was patched or drawn, and
+                // tearing down anyway would clear the marker the copy in charge is drawing.
+                return;
+            }
+
             AnchorMarker.RemoveAll();
             MarkerSprite.Unload();
             _harmony?.UnpatchSelf();
@@ -156,13 +176,13 @@ namespace QuickSwap
                 return;
             }
 
-            InventoryGrid.Element element = gui.m_playerGrid.GetHoveredElement();
+            InventoryElement element = gui.m_playerGrid.GetHoveredElement();
             if (element == null)
             {
                 return;
             }
 
-            Vector2i pos = element.m_pos;
+            Vector2i pos = element.Position;
             if (pos.y != 0)
             {
                 // Only the hotbar row can be anchored — the rest of the bag has no hotkey.

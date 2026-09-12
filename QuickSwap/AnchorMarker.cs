@@ -72,14 +72,15 @@ namespace QuickSwap
             int anchorIndex = AnchorIndex();
             Color colour = ModConfig.MarkerColor();
 
-            foreach (InventoryGrid.Element element in grid.m_elements)
+            foreach (InventoryElement element in grid.m_elements)
             {
-                if (element == null || element.m_go == null)
+                if (element == null)
                 {
                     continue;
                 }
 
-                Mark(element.m_go, element.m_pos.y == 0 && element.m_pos.x == anchorIndex, colour);
+                Vector2i pos = element.Position;
+                Mark(element.gameObject, pos.y == 0 && pos.x == anchorIndex, colour);
             }
         }
 

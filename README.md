@@ -59,6 +59,9 @@ and `Q` goes back to plain last-two-slots swapping while the anchor lives on its
 
 ## Installation
 
+Requires **Valheim 1.0 or newer** and BepInExPack Valheim 5.4.2350 or newer. Version 1.0.0
+of this mod does not work on Valheim 1.0 — update it rather than rolling back.
+
 **With a mod manager** (recommended) — install through r2modman or Thunderstore Mod Manager
 and launch the game from there.
 
